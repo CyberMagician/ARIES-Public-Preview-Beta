@@ -1781,7 +1781,7 @@ def launch_unified_desktop_app():
 
         api = DesktopWindowAPI()
         window = webview.create_window(
-            title="ARIES Live for Mac" if sys.platform == "darwin" else "ARIES Live for Windows",
+            title="Aries Live Beta" if sys.platform == "darwin" else "ARIES Live for Windows",
             url=f"http://127.0.0.1:{DEFAULT_PORT}",
             width=600,
             height=890,
@@ -1800,6 +1800,17 @@ def launch_unified_desktop_app():
                     global _MACOS_KEY_MONITOR
                     try:
                         import AppKit
+                        from Foundation import NSBundle
+
+                        bundle = NSBundle.mainBundle()
+                        info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
+                        if info:
+                            info["CFBundleName"] = "Aries Live Beta"
+                        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "icon.png")
+                        if os.path.exists(icon_path):
+                            ns_img = AppKit.NSImage.alloc().initWithContentsOfFile_(icon_path)
+                            if ns_img:
+                                AppKit.NSApplication.sharedApplication().setApplicationIconImage_(ns_img)
 
                         def _on_macos_key_down(event):
                             try:
