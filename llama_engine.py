@@ -241,6 +241,13 @@ class VulkanLlamaServerManager:
             load_mode = os.getenv("ARIES_LOAD_MODE", default_load_mode).strip()
 
             kv_type = "f16" if is_mac else "q8_0"
+            mac_p_cores = "4"
+            if is_mac:
+                try:
+                    p = int(subprocess.check_output(["sysctl", "-n", "hw.perflevel0.physicalcpu"], text=True).strip())
+                    mac_p_cores = str(max(2, p))
+                except Exception:
+                    mac_p_cores = "4"
             cmd = [
                 LLAMA_SERVER_EXE,
                 "--model", model_path,
@@ -253,7 +260,7 @@ class VulkanLlamaServerManager:
                 "--n-gpu-layers", "99",
                 "--parallel", "1",
                 "--threads", "2",
-                "--threads-batch", "6" if is_mac else "4",
+                "--threads-batch", mac_p_cores if is_mac else "4",
                 "--threads-http", "4" if is_mac else "2",
                 "--batch-size", "2048",
                 "--ubatch-size", "2048" if is_mac else "1024",
@@ -288,7 +295,7 @@ class VulkanLlamaServerManager:
                     "--spec-draft-n-max", "3",
                     "--spec-draft-p-min", "0.15" if is_mac else "0.05",
                     "--spec-draft-threads", "2",
-                    "--spec-draft-threads-batch", "6" if is_mac else "4",
+                    "--spec-draft-threads-batch", mac_p_cores if is_mac else "4",
                     "--spec-draft-prio", "3" if is_mac else "0",
                     "--spec-draft-prio-batch", "3" if is_mac else "2",
                 ])
