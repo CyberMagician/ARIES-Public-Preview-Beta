@@ -1,0 +1,26 @@
+# Local Python virtual environment
+.venv
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Downloaded / local AI model weights
+models/
+*.gguf
+*.onnx
+*.litertlm
+*.part
+
+# Runtime databases, logs, and user state
+*.db
+*.sqlite*
+.env
+usage_tracker.json
+crash.log
+aries_settings.json
+gatekeeper.json
+doc_cache.json
+
+# macOS & IDE artifacts
+.DS_Store
+*.app/

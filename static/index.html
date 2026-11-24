@@ -1,0 +1,4820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARIES Public Preview Beta</title>
+  <link rel="icon" type="image/x-icon" href="/static/aries.ico">
+  <link rel="stylesheet" href="/static/hig.css">
+  <link rel="stylesheet" href="/static/vendor/katex.min.css">
+  <link rel="stylesheet" href="/static/vendor/highlight-dark.min.css">
+  <script src="/static/vendor/mermaid.min.js" defer></script>
+  <script src="/static/vendor/katex.min.js" defer></script>
+  <script src="/static/vendor/highlight.min.js" defer></script>
+  <script src="/static/aries_preview_ui.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root, body[data-theme="green"] {
+      --bg: #04130f;
+      --card-bg: rgba(6, 32, 26, 0.75);
+      --border: rgba(16, 185, 129, 0.18);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.4);
+      --accent-secondary: #06b6d4;
+      --text: #f3fdf8;
+      --text-muted: #86a89c;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #064e3b 0%, #03130e 85%);
+      --user-bubble: linear-gradient(135deg, #059669, #047857);
+      --user-shadow: rgba(5, 150, 105, 0.3);
+      --border-thumb: rgba(16, 185, 129, 0.35);
+    }
+
+    body[data-theme="red"] {
+      --bg: #140507;
+      --card-bg: rgba(36, 8, 12, 0.78);
+      --border: rgba(239, 68, 68, 0.22);
+      --accent: #ef4444;
+      --accent-glow: rgba(239, 68, 68, 0.4);
+      --accent-secondary: #fb7185;
+      --text: #fff5f5;
+      --text-muted: #b88a8f;
+      --success: #ef4444;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #5a111a 0%, #140507 85%);
+      --user-bubble: linear-gradient(135deg, #dc2626, #b91c1c);
+      --user-shadow: rgba(220, 38, 38, 0.35);
+      --border-thumb: rgba(239, 68, 68, 0.35);
+    }
+
+    body[data-theme="orange"] {
+      --bg: #150903;
+      --card-bg: rgba(38, 16, 6, 0.78);
+      --border: rgba(249, 115, 22, 0.22);
+      --accent: #f97316;
+      --accent-glow: rgba(249, 115, 22, 0.4);
+      --accent-secondary: #fb923c;
+      --text: #fffaf5;
+      --text-muted: #bfa18f;
+      --success: #f97316;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #5a2408 0%, #150903 85%);
+      --user-bubble: linear-gradient(135deg, #ea580c, #c2410c);
+      --user-shadow: rgba(234, 88, 12, 0.35);
+      --border-thumb: rgba(249, 115, 22, 0.35);
+    }
+
+    body[data-theme="yellow"] {
+      --bg: #141103;
+      --card-bg: rgba(36, 30, 6, 0.78);
+      --border: rgba(234, 179, 8, 0.22);
+      --accent: #eab308;
+      --accent-glow: rgba(234, 179, 8, 0.4);
+      --accent-secondary: #fde047;
+      --text: #fffff2;
+      --text-muted: #bfb88f;
+      --success: #eab308;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #544307 0%, #141103 85%);
+      --user-bubble: linear-gradient(135deg, #ca8a04, #a16207);
+      --user-shadow: rgba(202, 138, 4, 0.35);
+      --border-thumb: rgba(234, 179, 8, 0.35);
+    }
+
+    body[data-theme="blue"] {
+      --bg: #030d17;
+      --card-bg: rgba(6, 23, 40, 0.78);
+      --border: rgba(59, 130, 246, 0.22);
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.4);
+      --accent-secondary: #38bdf8;
+      --text: #f0f7ff;
+      --text-muted: #8aa3bf;
+      --success: #3b82f6;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #0d3b66 0%, #030d17 85%);
+      --user-bubble: linear-gradient(135deg, #2563eb, #1d4ed8);
+      --user-shadow: rgba(37, 99, 235, 0.35);
+      --border-thumb: rgba(59, 130, 246, 0.35);
+    }
+
+    body[data-theme="indigo"] {
+      --bg: #070617;
+      --card-bg: rgba(14, 12, 42, 0.78);
+      --border: rgba(99, 102, 241, 0.22);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --accent-secondary: #818cf8;
+      --text: #f5f5ff;
+      --text-muted: #9594bf;
+      --success: #6366f1;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #1e1b4b 0%, #070617 85%);
+      --user-bubble: linear-gradient(135deg, #4f46e5, #4338ca);
+      --user-shadow: rgba(79, 70, 229, 0.35);
+      --border-thumb: rgba(99, 102, 241, 0.35);
+    }
+
+    body[data-theme="violet"] {
+      --bg: #100517;
+      --card-bg: rgba(28, 9, 42, 0.78);
+      --border: rgba(168, 85, 247, 0.22);
+      --accent: #a855f7;
+      --accent-glow: rgba(168, 85, 247, 0.4);
+      --accent-secondary: #c084fc;
+      --text: #faf5ff;
+      --text-muted: #b08fbf;
+      --success: #a855f7;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #3b0764 0%, #100517 85%);
+      --user-bubble: linear-gradient(135deg, #9333ea, #7e22ce);
+      --user-shadow: rgba(147, 51, 234, 0.35);
+      --border-thumb: rgba(168, 85, 247, 0.35);
+    }
+
+    body[data-theme="white"] {
+      --bg: #0e0f12;
+      --card-bg: rgba(28, 30, 36, 0.85);
+      --border: rgba(255, 255, 255, 0.2);
+      --accent: #e4e4e7;
+      --accent-glow: rgba(255, 255, 255, 0.35);
+      --accent-secondary: #fafafa;
+      --text: #ffffff;
+      --text-muted: #a1a1aa;
+      --success: #f4f4f5;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #27272a 0%, #09090b 85%);
+      --user-bubble: linear-gradient(135deg, #52525b, #3f3f46);
+      --user-shadow: rgba(82, 82, 91, 0.35);
+      --border-thumb: rgba(255, 255, 255, 0.35);
+    }
+
+    body[data-theme="black"] {
+      --bg: #000000;
+      --card-bg: rgba(18, 18, 20, 0.92);
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #71717a;
+      --accent-glow: rgba(113, 113, 122, 0.3);
+      --accent-secondary: #a1a1aa;
+      --text: #f4f4f5;
+      --text-muted: #71717a;
+      --success: #a1a1aa;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #18181b 0%, #000000 90%);
+      --user-bubble: linear-gradient(135deg, #27272a, #18181b);
+      --user-shadow: rgba(39, 39, 42, 0.4);
+      --border-thumb: rgba(113, 113, 122, 0.35);
+    }
+
+    body[data-theme="oled"] {
+      --bg: #000000;
+      --card-bg: #000000;
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #d4d4d8;
+      --accent-glow: transparent;
+      --accent-secondary: #ffffff;
+      --text: #ffffff;
+      --text-muted: #71717a;
+      --success: #ffffff;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --bg-gradient: #000000;
+      --user-bubble: #121214;
+      --user-shadow: none;
+      --border-thumb: rgba(255, 255, 255, 0.2);
+      background: #000000 !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      background: #04130f;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--bg-gradient, radial-gradient(circle at 50% 15%, #064e3b 0%, #03130e 85%));
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      border-radius: 20px;
+      box-shadow:
+        inset 0 0 0 1.5px rgba(255, 255, 255, 0.14),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+        inset 0 0 24px var(--accent-glow, rgba(16, 185, 129, 0.12));
+    }
+
+    body.maximized {
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* Top Bar (Apple HIG Two-Tier Vibrancy Header) */
+    .top-bar {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 9px 14px 8px 14px;
+      background: rgba(8, 10, 12, 0.78);
+      backdrop-filter: saturate(180%) blur(24px);
+      -webkit-backdrop-filter: saturate(180%) blur(24px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      z-index: 10;
+      cursor: default;
+    }
+
+    .top-bar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .top-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .sub-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding-top: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .sub-toolbar-left, .sub-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .speed-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      border-radius: 999px;
+      font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+      font-variant-numeric: tabular-nums;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #6ee7b7;
+      transition: all 0.2s ease;
+    }
+
+    .speed-pill.active {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: rgba(52, 211, 153, 0.65);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .speed-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .speed-pill.active .speed-dot {
+      animation: pulse 0.9s infinite;
+    }
+
+    .header-select-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 7px;
+      padding: 3px 6px;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .header-select-pill:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+      color: var(--text);
+    }
+
+    .header-select {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 0.72rem;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      max-width: 90px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .header-select option {
+      background: #111111;
+      color: #ffffff;
+    }
+
+    /* Apple macOS Traffic Lights */
+    .traffic-lights {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .traffic-btn {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1;
+      color: transparent;
+      transition: transform 0.12s ease, filter 0.12s ease, color 0.12s ease;
+      padding: 0;
+      outline: none;
+    }
+
+    .traffic-lights:hover .traffic-btn {
+      color: rgba(0, 0, 0, 0.72);
+    }
+
+    .traffic-btn:hover {
+      transform: scale(1.1);
+      filter: brightness(1.08);
+    }
+
+    .traffic-btn.close { background: #ff5f56; border-color: #e0443e; }
+    .traffic-btn.minimize { background: #ffbd2e; border-color: #dea123; }
+    .traffic-btn.maximize { background: #27c93f; border-color: #1aab29; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+      flex: 1 1 auto;
+    }
+
+    /* Neutral Top Action Buttons (New Chat, Licenses, Console) */
+    .console-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      color: #e4e4e7;
+      font-family: 'Consolas', 'SF Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .console-toggle-btn:hover,
+    .console-toggle-btn.active {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+    }
+
+    .console-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
+      transition: background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .console-status-dot.ready {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* ComfyUI-Style Integrated Python Console Drawer */
+    .console-drawer {
+      flex-shrink: 0;
+      max-height: 0;
+      overflow: hidden;
+      background: rgba(8, 8, 10, 0.98);
+      border-bottom: 0px solid rgba(255, 255, 255, 0.12);
+      transition: max-height 0.26s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-width 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .console-drawer.open {
+      max-height: 195px;
+      border-bottom-width: 1px;
+    }
+
+    .console-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px;
+      background: #000000;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'Consolas', 'SF Mono', monospace;
+    }
+
+    .console-header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .console-mini-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #a7f3d0;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .console-mini-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.32);
+      color: #ffffff;
+    }
+
+    .console-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 16px 10px 16px;
+      font-family: 'Consolas', 'SF Mono', 'Courier New', monospace;
+      font-size: 0.74rem;
+      line-height: 1.48;
+      color: #d1fae5;
+      user-select: text;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .console-line {
+      margin-bottom: 2px;
+    }
+
+    .console-line .tag-asr { color: #38bdf8; font-weight: 700; }
+    .console-line .tag-tts { color: #a78bfa; font-weight: 700; }
+    .console-line .tag-lat { color: #34d399; font-weight: 700; }
+    .console-line .tag-rdy { color: #10b981; font-weight: 700; }
+    .console-line .tag-err { color: #f87171; font-weight: 700; }
+
+
+    /* Integrated Open Source Licenses Drawer */
+    .licenses-drawer {
+      flex-shrink: 0;
+      max-height: 0;
+      overflow: hidden;
+      background: rgba(8, 8, 10, 0.98);
+      border-bottom: 0px solid rgba(255, 255, 255, 0.12);
+      transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-width 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .licenses-drawer.open {
+      max-height: 380px;
+      border-bottom-width: 1px;
+    }
+
+    /* About Drawer Hero Card & Specs Grid */
+    .about-hero-card {
+      background: linear-gradient(135deg, rgba(20, 24, 33, 0.95), rgba(13, 17, 23, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 6px;
+    }
+    .about-hero-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .about-hero-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .about-hero-logo {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+    .about-hero-version {
+      font-size: 0.68rem;
+      font-family: monospace;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .about-hero-badge {
+      font-size: 0.66rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      font-family: monospace;
+    }
+    .about-hero-desc {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 0 0 10px 0;
+    }
+    .about-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 6px;
+    }
+    .about-spec-item {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .spec-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .spec-val {
+      font-size: 0.72rem;
+      color: #f1f5f9;
+      font-family: 'Consolas', monospace;
+    }
+    .about-section-header {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 6px 2px 2px 2px;
+      font-family: 'Consolas', monospace;
+    }
+
+    .licenses-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 16px;
+      background: #000000;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'Consolas', 'SF Mono', monospace;
+    }
+
+    .licenses-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .licenses-body::-webkit-scrollbar { width: 6px; }
+    .licenses-body::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.35); border-radius: 3px; }
+
+    .license-card {
+      background: rgba(20, 20, 24, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .license-card:hover {
+      background: rgba(28, 28, 34, 0.85);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .license-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .license-name {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #f3fdf8;
+    }
+
+    .license-badge {
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-family: 'Consolas', monospace;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-apache { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.35); }
+    .badge-mit { background: rgba(6, 182, 212, 0.18); color: #22d3ee; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .badge-bsd { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .badge-cc { background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.35); }
+    .badge-gemma { background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.35); }
+
+    .license-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .license-details {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+      font-size: 0.68rem;
+      color: #a7f3d0;
+      font-family: 'Consolas', monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      display: none;
+    }
+
+    .license-details.expanded {
+      display: block;
+    }
+
+    .license-expand-btn {
+      background: none;
+      border: none;
+      color: var(--accent-secondary);
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 3px;
+      text-decoration: underline;
+    }
+
+    /* Chat History, Semantic Memory & User Profile Settings Drawers */
+    .history-drawer, .memory-drawer, .profile-drawer {
+      flex-shrink: 0;
+      max-height: 0;
+      overflow: hidden;
+      background: rgba(8, 8, 10, 0.98);
+      border-bottom: 0px solid rgba(255, 255, 255, 0.12);
+      transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-width 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .history-drawer.open, .memory-drawer.open {
+      max-height: 310px;
+      border-bottom-width: 1px;
+    }
+
+    .profile-drawer.open {
+      max-height: 460px;
+      border-bottom-width: 1px;
+    }
+
+    .history-header, .memory-header, .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 7px 14px;
+      background: #000000;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'Consolas', 'SF Mono', monospace;
+    }
+
+    .history-body, .memory-body, .profile-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .profile-subbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(12, 14, 18, 0.96);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .profile-mode-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .profile-tab-btn.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #6ee7b7;
+    }
+
+    .profile-budget-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Consolas', 'SF Mono', monospace;
+      font-size: 0.7rem;
+    }
+
+    .profile-budget-badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.14);
+      color: #6ee7b7;
+      white-space: nowrap;
+    }
+
+    .profile-budget-badge.warn {
+      border-color: rgba(245, 158, 11, 0.55);
+      background: rgba(245, 158, 11, 0.16);
+      color: #fcd34d;
+    }
+
+    .profile-budget-badge.over {
+      border-color: rgba(239, 68, 68, 0.65);
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .profile-budget-bar {
+      width: 96px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    .profile-budget-fill {
+      height: 100%;
+      width: 0%;
+      background: #10b981;
+      transition: width 0.12s ease, background-color 0.15s ease;
+    }
+
+    .profile-budget-fill.warn { background: #f59e0b; }
+    .profile-budget-fill.over { background: #ef4444; }
+
+    .profile-full-editor {
+      width: 100%;
+      min-height: 250px;
+      background: rgba(0, 0, 0, 0.48);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-family: 'Consolas', 'SF Mono', monospace;
+      font-size: 0.74rem;
+      line-height: 1.48;
+      padding: 9px 11px;
+      resize: vertical;
+      outline: none;
+    }
+
+    .profile-full-editor:focus { border-color: var(--accent, #10b981); }
+
+    .profile-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 9px;
+    }
+
+    .profile-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .profile-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .profile-card-title {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid transparent;
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex: 1;
+      outline: none;
+      padding: 2px 0;
+    }
+
+    .profile-card-title:focus { border-bottom-color: var(--accent, #10b981); }
+
+    .profile-card-sub {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .profile-card-text {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+      color: #e2e8f0;
+      font-family: inherit;
+      font-size: 0.73rem;
+      line-height: 1.45;
+      padding: 6px 8px;
+      resize: vertical;
+      min-height: 82px;
+      outline: none;
+    }
+
+    .profile-card-text:focus { border-color: var(--accent, #10b981); }
+
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(20, 20, 24, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .session-item:hover, .session-item.active {
+      background: rgba(30, 30, 38, 0.95);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .session-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #f3fdf8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .session-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: 'Consolas', monospace;
+      flex-shrink: 0;
+    }
+
+    .session-del-btn, .chunk-del-btn {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.6;
+      transition: opacity 0.15s, background 0.15s;
+      font-size: 0.76rem;
+    }
+
+    .session-del-btn:hover, .chunk-del-btn:hover {
+      opacity: 1;
+      background: rgba(239, 68, 68, 0.18);
+    }
+
+    .memory-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(18, 18, 22, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 9px 12px;
+      margin-bottom: 8px;
+    }
+
+    .memory-form-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .memory-input, .memory-textarea {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      padding: 5px 8px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    .memory-input:focus, .memory-textarea:focus {
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .memory-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
+      color: #f3fdf8;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      cursor: pointer;
+      align-self: flex-end;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .memory-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .chunk-card {
+      background: rgba(18, 18, 22, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .chunk-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .chunk-title {
+      font-weight: 700;
+      font-size: 0.77rem;
+      color: #60a5fa;
+    }
+
+    .chunk-text {
+      font-size: 0.72rem;
+      color: #d1d5db;
+      line-height: 1.35;
+      max-height: 48px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* RAG Grounded Context Indicator in Chat */
+    .rag-badge {
+      align-self: flex-start;
+      margin: 2px 0 4px 0;
+      background: rgba(30, 58, 138, 0.22);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: fadeIn 0.22s ease-out;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.04rem;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--user-bubble, linear-gradient(135deg, #10b981, #06b6d4));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .brand-icon svg { width: 16px; height: 16px; fill: white; }
+
+    .brand-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-sub {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--accent-secondary);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .quota-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #a7f3d0;
+    }
+
+    .quota-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* Main Container */
+    .main {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 12px 20px 14px 20px;
+      overflow: hidden;
+    }
+
+    /* Selector Row */
+    .device-row {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .device-select {
+      flex: 1;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Conversation Stream */
+    .conversation-container {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 10px 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .conversation-container::-webkit-scrollbar {
+      width: 7px;
+    }
+    .conversation-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+    }
+    .conversation-container::-webkit-scrollbar-thumb {
+      background: rgba(16, 185, 129, 0.35);
+      border-radius: 4px;
+    }
+    .conversation-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(16, 185, 129, 0.7);
+    }
+
+    /* Minimalist Centered Welcome Shimmer */
+    .welcome-container {
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 12px;
+      padding: 28px 20px;
+      user-select: none;
+      pointer-events: auto;
+      transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .welcome-container.fade-out {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.96);
+      pointer-events: none;
+    }
+
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--accent-secondary, #34d399);
+    }
+
+    .welcome-text {
+      font-size: 2.35rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(
+        110deg,
+        rgba(255, 255, 255, 0.35) 0%,
+        rgba(255, 255, 255, 0.35) 25%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(52, 211, 153, 0.95) 55%,
+        rgba(255, 255, 255, 0.35) 75%,
+        rgba(255, 255, 255, 0.35) 100%
+      );
+      background-size: 250% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: welcomeShimmer 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    .welcome-sub {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      max-width: 380px;
+      line-height: 1.4;
+    }
+
+    .welcome-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+      max-width: 520px;
+    }
+
+    .welcome-chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 6px 13px;
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+      backdrop-filter: blur(8px);
+    }
+
+    .welcome-chip:hover {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(52, 211, 153, 0.55);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+    }
+
+    .welcome-hint {
+      margin-top: 4px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    .welcome-hint kbd {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      padding: 1px 6px;
+      font-family: 'SF Mono', ui-monospace, monospace;
+      font-size: 0.68rem;
+      color: #ffffff;
+    }
+
+    @keyframes welcomeShimmer {
+      0% {
+        background-position: 120% 0;
+      }
+      100% {
+        background-position: -120% 0;
+      }
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 11px 15px;
+      border-radius: 16px;
+      font-size: 0.93rem;
+      line-height: 1.48;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      animation: fadeIn 0.22s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--user-bubble, linear-gradient(135deg, #059669, #047857));
+      color: white;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 14px var(--user-shadow, rgba(5, 150, 105, 0.3));
+    }
+
+    .message.agent {
+      align-self: flex-start;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message .sender-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      letter-spacing: 0.03em;
+    }
+
+    .message.user .sender-tag { color: rgba(255, 255, 255, 0.75); }
+
+    .msg-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .msg-metrics {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      color: var(--text-muted);
+      font-size: 0.67rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .metric-pill.speed {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(52, 211, 153, 0.35);
+      color: #6ee7b7;
+    }
+
+    .user-asr-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 5px;
+      font-family: 'SF Mono', ui-monospace, monospace;
+      font-variant-numeric: tabular-nums;
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .mute-reply-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mute-reply-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: var(--text);
+    }
+
+    .mute-reply-btn.muted {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .mute-reply-btn.muted:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #ffffff;
+    }
+
+    .mute-reply-btn svg {
+      width: 13px;
+      height: 13px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* Tool Call Card */
+    .tool-card {
+      align-self: center;
+      width: 92%;
+      background: rgba(6, 35, 28, 0.7);
+      border: 1px dashed rgba(16, 185, 129, 0.4);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.83rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeIn 0.22s ease-out;
+    }
+
+    .tool-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    .tool-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(52, 211, 153, 0.3);
+      border-top-color: #34d399;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .tool-result {
+      color: #a7f3d0;
+      font-family: monospace;
+      font-size: 0.78rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 6px 10px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+
+    /* Bottom Interactive Controls */
+    .controls-container {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding-top: 6px;
+    }
+
+    /* Audio Visualizer */
+    .audio-visualizer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3.5px;
+      height: 30px;
+    }
+
+    .visualizer-bar {
+      width: 3.5px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: height 0.06s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease;
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    /* Mic Button */
+    .mic-button-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mic-button-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    .mic-button-wrapper.generating::before {
+      border-color: rgba(52, 211, 153, 0.55);
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+      animation: pulse 1.1s infinite;
+    }
+
+    .mic-button-wrapper.speaking::before {
+      border-color: rgba(6, 182, 212, 0.65);
+      box-shadow: 0 0 22px rgba(6, 182, 212, 0.45);
+      animation: pulse 1.3s infinite;
+    }
+
+    /* Dedicated Spherical Texture Lighting for Microphone Button (Green idle / Red active) */
+    .mic-button {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 28%, #34d399 0%, #10b981 42%, #047857 85%, #064e3b 100%);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      outline: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 8px 24px rgba(4, 120, 87, 0.45),
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.5),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mic-button:hover {
+      transform: scale(1.05);
+      box-shadow:
+        0 10px 32px rgba(16, 185, 129, 0.65),
+        inset 0 1.5px 3px rgba(255, 255, 255, 0.65),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.45);
+    }
+
+    .mic-button.recording {
+      background: radial-gradient(circle at 35% 28%, #f87171 0%, #ef4444 42%, #b91c1c 85%, #7f1d1d 100%);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow:
+        0 10px 35px rgba(239, 68, 68, 0.75),
+        inset 0 1.5px 3px rgba(255, 255, 255, 0.65),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .mic-button svg {
+      width: 28px;
+      height: 28px;
+      fill: white;
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      min-height: 18px;
+    }
+
+    .status-text.recording {
+      color: #f87171;
+      font-weight: 600;
+    }
+
+    .status-text.speaking {
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    /* Screen Sharing Bar */
+    .screen-bar {
+      display: none;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(6, 40, 32, 0.8);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .screen-bar.active { display: flex; }
+
+    .screen-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #6ee7b7;
+      font-weight: 600;
+    }
+
+    .screen-live-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 1.5s infinite;
+    }
+
+    .screen-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .screen-action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .screen-action-btn.primary {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #a7f3d0;
+    }
+
+    .screen-action-btn.danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    /* Attachment Preview */
+    .attachment-preview {
+      display: none;
+      width: 100%;
+      align-items: center;
+      gap: 10px;
+      background: rgba(6, 40, 32, 0.8);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+    }
+
+    .attachment-preview.active { display: flex; }
+
+    .preview-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #061c16;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+    }
+
+    .preview-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .preview-name {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .preview-status {
+      font-size: 0.74rem;
+      color: #34d399;
+    }
+
+    .preview-remove-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Neutral Input Bar with Clean Highlights */
+    .input-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: rgba(16, 16, 20, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 26px;
+      padding: 5px 6px 5px 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .input-bar:focus-within {
+      background: rgba(22, 22, 26, 0.96);
+      border-color: rgba(255, 255, 255, 0.38);
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.12);
+    }
+
+    .attach-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 50%;
+      transition: color 0.15s ease;
+    }
+
+    .attach-btn:hover { color: #ffffff; }
+    .attach-btn svg { width: 19px; height: 19px; fill: currentColor; }
+
+    .text-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 8px 4px;
+    }
+
+    .text-input::placeholder { color: var(--text-muted); }
+
+    .send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--user-bubble, linear-gradient(135deg, #10b981, #06b6d4));
+      border: none;
+      outline: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .send-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: white;
+      transform: translateX(1px);
+    }
+
+    .send-btn.stop-mode {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
+    }
+
+    .send-btn.stop-mode:hover {
+      filter: brightness(1.08);
+      transform: scale(1.04);
+    }
+
+    .send-btn.stop-mode svg {
+      transform: none;
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Google AI Edge Gallery Streaming UI: Live Activations, Grey In-Flight Tail & 120ms Fade */
+    .message.user .msg-body { white-space: pre-wrap; }
+    .message.agent .msg-body { line-height: 1.52; }
+    .edge-committed-prose { white-space: pre-wrap; word-break: break-word; }
+
+    .tts-sentence, .tts-sent-space {
+      border-radius: 4px;
+      transition: background-color 0.12s cubic-bezier(0.0, 0.0, 0.2, 1);
+    }
+
+    .tts-sentence.active, .tts-sent-space.active {
+      background-color: rgba(16, 185, 129, 0.24);
+      background-color: color-mix(in srgb, var(--accent, #10b981) 24%, transparent);
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.16);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent, #10b981) 20%, transparent);
+    }
+
+    .tts-word {
+      border-radius: 4px;
+      transition: background-color 0.08s cubic-bezier(0.0, 0.0, 0.2, 1), color 0.08s cubic-bezier(0.0, 0.0, 0.2, 1);
+    }
+
+    .tts-word.active {
+      background-color: rgba(16, 185, 129, 0.58) !important;
+      background-color: color-mix(in srgb, var(--accent, #10b981) 58%, transparent) !important;
+      color: #ffffff;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.32);
+    }
+
+    @keyframes edgeTokenFadeIn {
+      from { opacity: 0.32; }
+      to { opacity: 1; }
+    }
+
+    .edge-token-fade {
+      animation: edgeTokenFadeIn 0.12s cubic-bezier(0.0, 0.0, 0.2, 1) forwards;
+    }
+
+    .edge-inflight-tail {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      padding-top: 4px;
+      color: rgba(148, 163, 184, 0.52);
+      font-size: 0.91rem;
+      line-height: 1.45;
+    }
+
+    .edge-inflight-tail.visible {
+      display: flex;
+    }
+
+    .edge-tail-text {
+      flex: 1;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .edge-tail-spinner {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(148, 163, 184, 0.22);
+      border-top-color: rgba(148, 163, 184, 0.68);
+      animation: spin 0.8s linear infinite;
+    }
+
+    .edge-code-block {
+      margin: 6px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #0b0f14;
+      white-space: normal;
+    }
+
+    .edge-code-lang {
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: 'Consolas', 'SF Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: lowercase;
+    }
+
+    .edge-code-block pre {
+      margin: 0;
+      padding: 10px 12px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'SF Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.48;
+      color: #e2e8f0;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar (Apple HIG Two-Tier Vibrancy Header) -->
+  <div class="top-bar" id="topBar">
+    <div class="top-bar-row pywebview-drag-region">
+      <div class="brand pywebview-drag-region">
+        <div class="traffic-lights" title="Window Controls">
+          <button class="traffic-btn close" id="btnCloseWin" title="Close App & Stop Server">×</button>
+          <button class="traffic-btn minimize" id="btnMinWin" title="Minimize">–</button>
+          <button class="traffic-btn maximize" id="btnMaxWin" title="Maximize / Restore">+</button>
+        </div>
+        <div class="brand-icon pywebview-drag-region">
+          <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm5 9a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V21h2v-2.07A7 7 0 0 0 19 11h-2z"/></svg>
+        </div>
+        <div class="brand-title pywebview-drag-region">
+          <span class="pywebview-drag-region">ARIES Live for Mac</span>
+          <span class="brand-sub pywebview-drag-region">Autonomous Edge AI</span>
+        </div>
+      </div>
+      <div class="top-telemetry">
+        <div class="speed-pill" id="speedPill" title="Live On-Device Inference Speed">
+          <span class="speed-dot"></span>
+          <span>⚡ <span id="speedText">ARIES Ready</span></span>
+        </div>
+        <div class="header-select-pill" id="ramPill" title="Live Unified Memory Status" style="cursor: default; font-family: 'SF Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 0.72rem; gap: 6px; padding: 3px 9px;">
+          <svg style="width: 12px; height: 12px; fill: #10b981; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M2 7h2v10H2V7zm5-2h2v14H7V5zm5-2h2v18h-2V3zm5 2h2v14h-2V5zm5 2h2v10h-2V7z"/></svg>
+          <span style="color: #94a3b8; font-weight: 500;">UMA:</span>
+          <span id="ramText" style="color: #f1f5f9; font-weight: 600;">-- / 32 GB</span>
+          <div style="width: 34px; height: 5px; background: rgba(255,255,255,0.12); border-radius: 3px; overflow: hidden; margin-left: 2px;">
+            <div id="ramBar" style="width: 0%; height: 100%; background: #10b981; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sub-toolbar">
+      <div class="sub-toolbar-left">
+        <div class="header-select-pill" title="Microphone Device">
+          <svg style="width: 11px; height: 11px; fill: currentColor; opacity: 0.85; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+          <select class="header-select" id="deviceSelect">
+            <option value="">Default Mic</option>
+          </select>
+        </div>
+        <div class="header-select-pill" title="Color Theme">
+          <svg style="width: 11px; height: 11px; fill: currentColor; opacity: 0.85; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.42.53.37 1.3-.12 1.77-.44.43-.51 1.13-.15 1.63.36.5 1.01.69 1.58.46 1.17-.46 2.45-.72 3.72-.72 4.97 0 9-4.03 9-9s-4.03-9-9-9zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          <select class="header-select" id="themeSelect">
+            <option value="green">🟢 Green</option>
+            <option value="red">🔴 Red</option>
+            <option value="orange">🟠 Orange</option>
+            <option value="yellow">🟡 Yellow</option>
+            <option value="blue">🔵 Blue</option>
+            <option value="indigo">🟣 Indigo</option>
+            <option value="violet">🪻 Violet</option>
+            <option value="white">⚪ White</option>
+            <option value="black">⚫ Black</option>
+            <option value="oled">⚡ OLED Pure (Zero Power)</option>
+          </select>
+        </div>
+      </div>
+      <div class="sub-toolbar-right">
+        <button class="console-toggle-btn" id="newChatBtn" title="Start a fresh conversation and refresh context">
+          <svg style="width: 11px; height: 11px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span>New Chat</span>
+        </button>
+        <button class="console-toggle-btn" id="historyToggleBtn" title="View Persistent Chat History">
+          <svg style="width: 11px; height: 11px; fill: currentColor;" viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A8.96 8.96 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          <span>History</span>
+        </button>
+        <button class="console-toggle-btn" id="profileToggleBtn" title="Settings &amp; View/Edit Full User Profile Memory">
+          <svg style="width: 11px; height: 11px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span id="profileToggleLabel">Profile</span>
+        </button>
+        <button class="console-toggle-btn" id="memoryToggleBtn" title="ARIES Semantic Memory">
+          <svg style="width: 11px; height: 11px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm0-4h-2V7h2v7z"/></svg>
+          <span>Memory</span>
+        </button>
+        <button class="console-toggle-btn" id="licensesToggleBtn" title="About ARIES Live (v0.1) &amp; Open Source Licenses">
+          <svg style="width: 11px; height: 11px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <span>About</span>
+        </button>
+        <button class="console-toggle-btn" id="consoleToggleBtn" title="Toggle Integrated Python Launcher Console">
+          <span class="console-status-dot" id="consoleStatusDot"></span>
+          <span>&gt;_ Console</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ComfyUI-Style Integrated Python Launcher Console Drawer -->
+  <div class="console-drawer" id="consoleDrawer">
+    <div class="console-header">
+      <span id="consoleHeaderTitle">ARIES ENGINE TELEMETRY CONSOLE</span>
+      <div class="console-header-actions">
+        <button class="console-mini-btn" id="btnCopyConsole">Copy</button>
+        <button class="console-mini-btn" id="btnClearConsole">Clear</button>
+      </div>
+    </div>
+    <div class="console-body" id="consoleBody"></div>
+  </div>
+
+  <!-- Persistent Multi-Session Chat History Drawer -->
+  <div class="history-drawer" id="historyDrawer">
+    <div class="history-header">
+      <span>SAVED CONVERSATIONS (PERSISTENT SQLITE)</span>
+      <div class="console-header-actions">
+        <button class="console-mini-btn" id="btnNewSession">New</button>
+        <button class="console-mini-btn" id="btnRefreshHistory">Refresh</button>
+        <button class="console-mini-btn" id="btnCloseHistory">Close</button>
+      </div>
+    </div>
+    <div class="history-body" id="historyBody">
+      <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:12px;">Loading past conversations...</div>
+    </div>
+  </div>
+
+  <!-- ARIES Local Semantic Memory Drawer -->
+  <div class="memory-drawer" id="memoryDrawer">
+    <div class="memory-header">
+      <span id="memoryHeaderTitle">ARIES LOCAL SEMANTIC MEMORY</span>
+      <div class="console-header-actions">
+        <button class="console-mini-btn" id="btnRefreshMemory">Refresh</button>
+        <button class="console-mini-btn" id="btnCloseMemory">Close</button>
+      </div>
+    </div>
+    <div class="memory-body" id="memoryBody">
+      <div class="memory-form">
+        <div style="font-size:0.74rem; font-weight:700; color:#93c5fd; margin-bottom:2px;">Add Document / Fact to Local Vector Store</div>
+        <div class="memory-form-row">
+          <input type="text" class="memory-input" id="memoryDocTitle" placeholder="Document Title (e.g., Wi-Fi / Server Setup)" style="flex:1;">
+          <select class="memory-input" id="memoryDocDomain" style="width:90px;">
+            <option value="qa">Q&A</option>
+            <option value="search">Search</option>
+            <option value="code">Code</option>
+            <option value="fact">Fact</option>
+          </select>
+        </div>
+        <textarea class="memory-textarea" id="memoryDocContent" rows="2" placeholder="Document content, instructions, or notes to index..."></textarea>
+        <button class="memory-btn" id="btnAddMemoryDoc">Index Document</button>
+      </div>
+      <div id="memoryChunksList" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+  </div>
+
+  <!-- Settings & Persistent User Profile Drawer (Entire Sent Prompt + Section Cards + Budget Meter) -->
+  <div class="profile-drawer" id="profileDrawer">
+    <div class="profile-header">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span>SETTINGS · USER PROFILE MEMORY</span>
+        <label style="display:flex; align-items:center; gap:4px; cursor:pointer; color:#e2e8f0; font-family:inherit; font-size:0.71rem;">
+          <input type="checkbox" id="profileEnabledToggle" checked>
+          <span>Include in every chat</span>
+        </label>
+      </div>
+      <div class="console-header-actions">
+        <button class="console-mini-btn" id="btnAddProfileSection" title="Add a new profile section">+ Section</button>
+        <button class="console-mini-btn" id="btnDistillProfile" title="Extract durable new facts from latest chat">Distill Chat</button>
+        <button class="console-mini-btn" id="btnResetProfile" title="Restore default ARIES Live Max profile sections">Reset Defaults</button>
+        <button class="console-mini-btn" id="btnSaveProfile" style="background:rgba(16,185,129,0.22); color:#6ee7b7; border-color:rgba(16,185,129,0.45);">Save</button>
+        <button class="console-mini-btn" id="btnCloseProfile">Close</button>
+      </div>
+    </div>
+    <div class="profile-subbar">
+      <div class="profile-mode-tabs">
+        <button type="button" class="console-mini-btn profile-tab-btn active" id="profileModeRawBtn">Full Sent Prompt</button>
+        <button type="button" class="console-mini-btn profile-tab-btn" id="profileModeCardsBtn">Section Cards</button>
+      </div>
+      <div class="profile-budget-wrap">
+        <span class="profile-budget-badge" id="profileCharTokenCount">0 / 8,000 chars · ~0 / 2,000 tokens</span>
+        <div class="profile-budget-bar" title="Recommended budget: keep under 2,000 tokens (~8,000 characters)">
+          <div class="profile-budget-fill" id="profileBudgetFill"></div>
+        </div>
+      </div>
+    </div>
+    <div class="profile-body">
+      <div id="profileBudgetWarn" style="display:none; font-size:0.71rem; color:#fca5a5; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); border-radius:6px; padding:5px 9px;">
+        Over recommended 2,000-token (~8,000 character) limit. Consider trimming to keep responses fast and within the local context budget.
+      </div>
+      <div id="profileRawContainer">
+        <div style="font-size:0.71rem; color:var(--text-muted); margin-bottom:5px;">
+          Entire User Profile text sent in the KV-cached system prompt (edit headings with <code>### Title</code>):
+        </div>
+        <textarea id="profileFullTextEditor" class="profile-full-editor" rows="12" placeholder="[USER PROFILE / MEMORY SUMMARY]: ..."></textarea>
+      </div>
+      <div class="profile-cards-grid" id="profileCardsGrid" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Integrated About & Open Source Licenses Drawer -->
+  <div class="licenses-drawer" id="licensesDrawer">
+    <div class="licenses-header">
+      <span>ABOUT ARIES LIVE FOR MAC</span>
+      <div class="console-header-actions">
+        <button class="console-mini-btn" id="btnCopyLicenses">Copy Info</button>
+        <button class="console-mini-btn" id="btnCloseLicenses">Close</button>
+      </div>
+    </div>
+    <div class="licenses-body" id="licensesBody">
+      <!-- General System Information Hero Card (Black Box) -->
+      <div class="about-hero-card">
+        <div class="about-hero-title-row">
+          <div class="about-hero-brand">
+            <span class="about-hero-logo">ARIES Live for Mac</span>
+            <span class="about-hero-version">Version 0.1 (Beta)</span>
+          </div>
+          <span class="about-hero-badge">100% Offline Edge Architecture</span>
+        </div>
+        <p class="about-hero-desc">
+          ARIES (Autonomous Real-time Intelligent Edge System) is a self-contained, on-device artificial intelligence assistant for Mac. Engineered for ultra-low latency, bidirectional natural speech conversation, multimodal visual perception, and persistent contextual memory with strictly zero cloud dependencies or external telemetry.
+        </p>
+        <div class="about-specs-grid">
+          <div class="about-spec-item">
+            <span class="spec-label">Edition</span>
+            <span class="spec-val">ARIES Live Edge for Mac (Apple Silicon)</span>
+          </div>
+          <div class="about-spec-item">
+            <span class="spec-label">Hardware Acceleration</span>
+            <span class="spec-val">Local GPU &amp; Neural Acceleration</span>
+          </div>
+          <div class="about-spec-item">
+            <span class="spec-label">Voice & Acoustics</span>
+            <span class="spec-val">Real-time Conversational Audio Engine</span>
+          </div>
+          <div class="about-spec-item">
+            <span class="spec-label">Visual Perception</span>
+            <span class="spec-val">On-device Screen & Image Context Engine</span>
+          </div>
+          <div class="about-spec-item">
+            <span class="spec-label">Data Privacy</span>
+            <span class="spec-val">Strictly Local (Zero Cloud Telemetry)</span>
+          </div>
+          <div class="about-spec-item">
+            <span class="spec-label">Copyright</span>
+            <span class="spec-val">&copy; 2026 ARIES Live Technologies</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section-header">ABOUT THE CREATOR</div>
+      <div class="about-card" style="display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;">
+        <img src="/static/creator.jpg" alt="Andrew — Creator of ARIES" style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid rgba(16,185,129,0.45); flex-shrink:0;">
+        <div style="flex:1; min-width:220px;">
+          <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+            <span style="font-size:0.95rem; font-weight:700; color:#f8fafc;">Andrew</span>
+            <span style="font-size:0.72rem; font-weight:600; color:#10b981;">Creator of ARIES</span>
+          </div>
+          <p style="margin:0 0 10px 0; font-size:0.78rem; line-height:1.5; color:#cbd5e1;">
+            Hey, I’m Andrew. I spend my free time tinkering with local AI orchestration, native Apple/Android apps, and Raspberry Pi/ESP32 robotics. I’m not a corporate dev—just someone who loves pushing consumer hardware to its limits and building practical, open-source tools from scratch. If any of my projects, scripts, or experiments have helped you out or sparked an idea, buying me a coffee helps fund the next round of parts, compute, and late-night builds.
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <a href="https://buymeacoffee.com/andrewreynk" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; background:#FFDD00; color:#0f172a; font-weight:700; font-size:0.76rem; padding:6px 12px; border-radius:8px; text-decoration:none;">
+              <span>☕</span>
+              <span>Buy Me a Coffee</span>
+            </a>
+            <a href="https://www.youtube.com/@andrewryanreynosa" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); font-weight:600; font-size:0.76rem; padding:6px 12px; border-radius:8px; text-decoration:none;">
+              <span>▶</span>
+              <span>YouTube</span>
+            </a>
+            <a href="https://github.com/CyberMagician" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.08); color:#f1f5f9; border:1px solid rgba(255,255,255,0.2); font-weight:600; font-size:0.76rem; padding:6px 12px; border-radius:8px; text-decoration:none;">
+              <span>GitHub</span>
+            </a>
+            <a href="https://www.kaggle.com/andrewreynosa" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.35); font-weight:600; font-size:0.76rem; padding:6px 12px; border-radius:8px; text-decoration:none;">
+              <span>Kaggle</span>
+            </a>
+            <a href="https://www.linkedin.com/in/andrew-reynosa-9a7614118/" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; background:rgba(59,130,246,0.18); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); font-weight:600; font-size:0.76rem; padding:6px 12px; border-radius:8px; text-decoration:none;">
+              <span>LinkedIn</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <span>THIRD-PARTY OPEN SOURCE COMPLIANCE NOTICES</span>
+        <button class="console-mini-btn" id="btnViewFullLicenses" style="font-size:0.68rem; padding:2px 8px;">View Full LICENSES.md</button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; margin: 4px 0 8px 0;">
+        <input type="text" id="licenseSearchInput" placeholder="Filter notices (e.g., Gemma, NVIDIA, MIT, Apache)..." style="flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 10px; color:#f1f5f9; font-size:0.75rem; font-family:inherit; outline:none;">
+      </div>
+
+      <pre id="fullLicensesView" style="display:none; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px; font-family:'Consolas', monospace; font-size:0.7rem; color:#cbd5e1; max-height:260px; overflow-y:auto; white-space:pre-wrap; word-break:break-word;"></pre>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">1. Google Gemma 4</span>
+          <span class="license-badge badge-apache">Apache 2.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) Google LLC. All Rights Reserved. Licensed under the Apache License, Version 2.0. Model Documentation: https://ai.google.dev/gemma/docs/core/model_card_4</div>
+        <button class="license-expand-btn" data-target="lic-gemma">View Notice</button>
+        <div class="license-details" id="lic-gemma">Copyright (c) Google LLC. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">2. NVIDIA NeMo Parakeet</span>
+          <span class="license-badge badge-cc">CC-BY-4.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) 2024 NVIDIA Corporation. All Rights Reserved. FastConformer-TDT neural speech acoustic model.</div>
+        <button class="license-expand-btn" data-target="lic-parakeet">View Notice</button>
+        <div class="license-details" id="lic-parakeet">Licensed under the Creative Commons Attribution 4.0 International License (CC-BY-4.0).
+Copyright (c) 2024 NVIDIA Corporation. All Rights Reserved.
+You are free to share and adapt for any purpose, even commercially, with appropriate credit to NVIDIA Corporation: https://creativecommons.org/licenses/by/4.0/</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">3. Google EmbeddingGemma 2</span>
+          <span class="license-badge badge-apache">Apache 2.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) Google LLC. All Rights Reserved. Licensed under the Apache License, Version 2.0. Model Card: https://ai.google.dev/gemma/docs/embeddinggemma</div>
+        <button class="license-expand-btn" data-target="lic-emb">View Notice</button>
+        <div class="license-details" id="lic-emb">Copyright (c) Google LLC. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0.</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">4. llama.cpp / llama-server</span>
+          <span class="license-badge badge-mit">MIT License</span>
+        </div>
+        <div class="license-desc">Copyright (c) 2023-2026 Georgi Gerganov and contributors. Native tensor computation runtime.</div>
+        <button class="license-expand-btn" data-target="lic-llama">View Notice</button>
+        <div class="license-details" id="lic-llama">MIT License
+Copyright (c) 2023-2026 Georgi Gerganov and contributors
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software...</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">5. Google AI Edge Phonon 31M</span>
+          <span class="license-badge badge-apache">Apache 2.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) Google LLC. All Rights Reserved. On-device streaming neural text-to-speech acoustic synthesizer.</div>
+        <button class="license-expand-btn" data-target="lic-phonon">View Notice</button>
+        <div class="license-details" id="lic-phonon">Copyright (c) Google LLC. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0.</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">6. Google MediaPipe &amp; LiteRT</span>
+          <span class="license-badge badge-apache">Apache 2.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) Google LLC. All Rights Reserved. Cross-platform ML framework, audio task pipelines, and LiteRT XNNPACK runtime.</div>
+        <button class="license-expand-btn" data-target="lic-mediapipe">View Notice</button>
+        <div class="license-details" id="lic-mediapipe">Copyright (c) Google LLC. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0.</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">7. Kokoro 82M</span>
+          <span class="license-badge badge-apache">Apache 2.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) 2024-2025 hexgrad &amp; community contributors. High-fidelity conversational neural speech synthesis.</div>
+        <button class="license-expand-btn" data-target="lic-kokoro">View Notice</button>
+        <div class="license-details" id="lic-kokoro">Copyright (c) 2024-2025 hexgrad
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0.</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">8. Xiaomi Sherpa-ONNX</span>
+          <span class="license-badge badge-apache">Apache 2.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) 2022-2026 Xiaomi Corporation and sherpa-onnx contributors. Offline transducer neural engine.</div>
+        <button class="license-expand-btn" data-target="lic-sherpa">View Notice</button>
+        <div class="license-details" id="lic-sherpa">Copyright (c) 2022-2026 Xiaomi Corporation and sherpa-onnx contributors.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">9. OpenAI OpenAPI Multimodal Specification</span>
+          <span class="license-badge badge-apache">Apache 2.0</span>
+        </div>
+        <div class="license-desc">Copyright (c) OpenAI. Standardized OpenAPI JSON schema for multimodal vision input.</div>
+        <button class="license-expand-btn" data-target="lic-openai">View Notice</button>
+        <div class="license-details" id="lic-openai">Copyright (c) OpenAI. Licensed under the Apache License, Version 2.0.
+OpenAPI Specification & Schema: https://github.com/openai/openai-openapi</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">10. pywebview &amp; NumPy</span>
+          <span class="license-badge badge-bsd">BSD 3-Clause</span>
+        </div>
+        <div class="license-desc">Copyright (c) 2014-2026 Roman Sirokov &amp; 2005-2026 NumPy Developers.</div>
+        <button class="license-expand-btn" data-target="lic-bsd">View Notice</button>
+        <div class="license-details" id="lic-bsd">Copyright (c) 2014-2026, Roman Sirokov and contributors.
+Copyright (c) 2005-2026, NumPy Developers.
+All rights reserved. Redistribution and use in source and binary forms permitted under BSD-3-Clause terms.</div>
+      </div>
+
+      <div class="license-card">
+        <div class="license-title-row">
+          <span class="license-name">11. Plus Jakarta Sans</span>
+          <span class="license-badge badge-mit">SIL OFL 1.1</span>
+        </div>
+        <div class="license-desc">Copyright (c) 2020 The Plus Jakarta Sans Project Authors (Gumpita Rahayu, Tokotype).</div>
+        <button class="license-expand-btn" data-target="lic-pjs">View Notice</button>
+        <div class="license-details" id="lic-pjs">Licensed under the SIL Open Font License, Version 1.1 (OFL-1.1). http://scripts.sil.org/OFL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main">
+    
+
+
+    <!-- Live Conversation Transcript Stream -->
+    <div class="conversation-container" id="chatContainer">
+      <div class="welcome-container" id="welcomeContainer">
+        <div class="welcome-badge">100% ON-DEVICE · ZERO CLOUD · REAL-TIME INTELLIGENCE</div>
+        <div class="welcome-text" id="welcomeText">ARIES Live</div>
+        <div class="welcome-sub">Autonomous Real-Time Voice &amp; Vision Intelligence</div>
+        <div class="welcome-chips">
+          <button type="button" class="welcome-chip" data-prompt="Tell me about my projects.">⚡ Tell me about my projects</button>
+          <button type="button" class="welcome-chip" data-prompt="Check my Mac's live system status.">🖥️ Check my Mac's live system status</button>
+          <button type="button" class="welcome-chip" data-prompt="Explain unified memory in 2 sentences.">🧠 Explain unified memory in 2 sentences</button>
+        </div>
+        <div class="welcome-hint">Hold <kbd>␣ Space</kbd> to talk or click the microphone</div>
+      </div>
+    </div>
+
+    <!-- Bottom Controls & Record Button -->
+    <div class="controls-container">
+      
+      <!-- Audio Visualizer Bars (16-bar symmetric) -->
+      <div class="audio-visualizer" id="visualizer">
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+        <div class="visualizer-bar"></div>
+      </div>
+
+      <!-- Record / Push to Talk Button -->
+      <div class="mic-button-wrapper" id="micWrapper">
+        <button class="mic-button" id="recordBtn" title="Click to Record (or hold Spacebar)">
+          <svg viewBox="0 0 24 24" id="micIcon">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="status-text" id="statusText">Click microphone to speak</div>
+
+      <!-- Attachment Preview Pill -->
+      <div class="attachment-preview" id="attachmentPreview">
+        <img class="preview-thumb" id="previewThumb" src="" alt="Attachment Preview" />
+        <div class="preview-info">
+          <div class="preview-name" id="previewName">File attached</div>
+          <div class="preview-status" id="previewStatus">Ready to send</div>
+        </div>
+        <button class="preview-remove-btn" id="removeAttachmentBtn" type="button" title="Remove attachment">✕</button>
+      </div>
+
+      <!-- Screen Sharing Active Bar -->
+      <div class="screen-bar" id="screenBar">
+        <div class="screen-indicator">
+          <div class="screen-live-dot"></div>
+          <span id="screenLabel">Screen Active</span>
+        </div>
+        <div class="screen-actions">
+          <button class="screen-action-btn primary" id="snapScreenBtn" type="button">📸 Snap Screen</button>
+          <button class="screen-action-btn danger" id="stopScreenBtn" type="button">✕ Stop</button>
+        </div>
+      </div>
+
+      <video id="screenVideo" autoplay playsinline muted style="display: none;"></video>
+
+      <!-- Text Input & Attachment Bar -->
+      <div class="input-bar">
+        <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;">
+        <button class="attach-btn" id="attachBtn" type="button" title="Attach image or video">
+          <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V6H9v9.5a3.5 3.5 0 0 0 7 0V5a4.5 4.5 0 0 0-9 0v12.5c0 3.31 2.69 6 6 6s6-2.69 6-6V6h-2.5z"/></svg>
+        </button>
+        <button class="attach-btn" id="screenBtn" type="button" title="Share Screen / Snapshot">
+          <svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 2v1h12v-1l-1-2h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z"/></svg>
+        </button>
+        <input type="text" class="text-input" id="textPromptInput" placeholder="Speak into mic or type a prompt..." autocomplete="off">
+        <button class="send-btn" id="sendPromptBtn" type="button" title="Send (Enter)">
+          <svg id="sendBtnIcon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          <svg id="stopBtnIcon" viewBox="0 0 24 24" style="display: none;"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // State
+    let ws = null;
+    let isRecording = false;
+    let audioInputCtx = null;
+    let audioOutputCtx = null;
+    let mediaStream = null;
+    let scriptProcessor = null;
+    let analyserNode = null;
+    let nextPlayTime = 0;
+    let animFrame = null;
+    let lastVoiceSpike = 0;
+    let vadSilenceTimer = null;
+    let isServerGenerating = false;
+    let isAudioMuted = false;
+    let audioEndTimer = null;
+
+    const recordBtn = document.getElementById('recordBtn');
+    const micWrapper = document.getElementById('micWrapper');
+    const speedPill = document.getElementById('speedPill');
+    const speedText = document.getElementById('speedText');
+    const statusText = document.getElementById('statusText');
+    const quotaText = document.getElementById('quotaText');
+    const chatContainer = document.getElementById('chatContainer');
+    const modelSelect = document.getElementById('modelSelect');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const deviceSelect = document.getElementById('deviceSelect');
+    const visualizerBars = document.querySelectorAll('.visualizer-bar');
+
+    // Multimodal
+    const fileInput = document.getElementById('fileInput');
+    const attachBtn = document.getElementById('attachBtn');
+    const attachmentPreview = document.getElementById('attachmentPreview');
+    const previewThumb = document.getElementById('previewThumb');
+    const previewName = document.getElementById('previewName');
+    const previewStatus = document.getElementById('previewStatus');
+    const removeAttachmentBtn = document.getElementById('removeAttachmentBtn');
+    const textPromptInput = document.getElementById('textPromptInput');
+    const sendPromptBtn = document.getElementById('sendPromptBtn');
+    const sendBtnIcon = document.getElementById('sendBtnIcon');
+    const stopBtnIcon = document.getElementById('stopBtnIcon');
+
+    // Screen
+    let screenStream = null;
+    const screenBtn = document.getElementById('screenBtn');
+    const screenBar = document.getElementById('screenBar');
+    const screenVideo = document.getElementById('screenVideo');
+    const snapScreenBtn = document.getElementById('snapScreenBtn');
+    const stopScreenBtn = document.getElementById('stopScreenBtn');
+    const screenLabel = document.getElementById('screenLabel');
+
+    let attachedFrames = [];
+    let attachedPreviewUrl = null;
+    let attachedLabel = '';
+
+    // -------------------------------------------------------------
+    // Web Audio Output Context for 24kHz Speaker Playback (PocketTTS)
+    // -------------------------------------------------------------
+    let outputAnalyserNode = null;
+    let outputVisRafId = null;
+
+    function getAudioOutputCtx() {
+      if (!audioOutputCtx) {
+        audioOutputCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        outputAnalyserNode = audioOutputCtx.createAnalyser();
+        outputAnalyserNode.fftSize = 64;
+        outputAnalyserNode.smoothingTimeConstant = 0.72;
+        outputAnalyserNode.connect(audioOutputCtx.destination);
+      }
+      if (audioOutputCtx.state === 'suspended') {
+        audioOutputCtx.resume();
+      }
+      return audioOutputCtx;
+    }
+
+    function updateMicOrbitalState() {
+      if (!micWrapper) return;
+      const speaking = isAudioPlaying();
+      const generating = isServerGenerating && !speaking && !isRecording;
+      micWrapper.classList.toggle('speaking', speaking && !isRecording);
+      micWrapper.classList.toggle('generating', generating);
+    }
+
+    function startOutputVisualizer() {
+      if (outputVisRafId !== null) return;
+      const freqData = new Uint8Array(outputAnalyserNode ? outputAnalyserNode.frequencyBinCount : 32);
+      const tick = () => {
+        if (isRecording) {
+          outputVisRafId = null;
+          updateMicOrbitalState();
+          return;
+        }
+        const speaking = isAudioPlaying();
+        const generating = isServerGenerating && !speaking;
+        updateMicOrbitalState();
+
+        if (!speaking && !generating) {
+          visualizerBars.forEach(b => b.style.height = '6px');
+          outputVisRafId = null;
+          return;
+        }
+
+        if (speaking && outputAnalyserNode) {
+          outputAnalyserNode.getByteFrequencyData(freqData);
+          const n = visualizerBars.length;
+          for (let i = 0; i < n; i++) {
+            const distFromCenter = Math.abs(i - (n - 1) / 2) / (n / 2);
+            const binIdx = Math.min(freqData.length - 1, Math.floor(distFromCenter * 12));
+            const val = freqData[binIdx] || 0;
+            const h = Math.max(6, (val / 255) * 28);
+            visualizerBars[i].style.height = `${h}px`;
+          }
+        } else if (generating) {
+          const t = performance.now() * 0.006;
+          const n = visualizerBars.length;
+          for (let i = 0; i < n; i++) {
+            const wave = Math.sin(t - i * 0.45) * 0.5 + 0.5;
+            const h = 6 + wave * 14;
+            visualizerBars[i].style.height = `${h.toFixed(1)}px`;
+          }
+        }
+
+        outputVisRafId = requestAnimationFrame(tick);
+      };
+      outputVisRafId = requestAnimationFrame(tick);
+    }
+
+    function isAudioPlaying() {
+      return !!(audioOutputCtx && nextPlayTime > audioOutputCtx.currentTime + 0.02);
+    }
+
+    function updateSendStopButton() {
+      if (!sendPromptBtn) return;
+      const hasTypedText = textPromptInput && textPromptInput.value.trim().length > 0;
+      const shouldShowStop = (isServerGenerating || isAudioPlaying()) && !hasTypedText;
+      sendPromptBtn.classList.toggle('stop-mode', shouldShowStop);
+      sendPromptBtn.title = shouldShowStop ? 'Stop Response (Esc)' : 'Send (Enter)';
+      if (sendBtnIcon) sendBtnIcon.style.display = shouldShowStop ? 'none' : '';
+      if (stopBtnIcon) stopBtnIcon.style.display = shouldShowStop ? '' : 'none';
+    }
+
+    function stopResponse() {
+      flushAudioPlayback();
+      isServerGenerating = false;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'stop_response' }));
+      }
+      updateSendStopButton();
+      if (!isRecording) {
+        statusText.textContent = "Response stopped. Ready - Click microphone to speak";
+        statusText.className = "status-text";
+      }
+    }
+
+    function getMuteButtonInnerHtml(muted) {
+      if (muted) {
+        return `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg><span>Audio Muted</span>`;
+      }
+      return `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg><span>Mute Audio</span>`;
+    }
+
+    function syncMuteButtonsUI() {
+      document.querySelectorAll('.mute-reply-btn').forEach(btn => {
+        btn.classList.toggle('muted', isAudioMuted);
+        btn.title = isAudioMuted ? 'Unmute Spoken Audio' : 'Mute Spoken Audio';
+        btn.innerHTML = getMuteButtonInnerHtml(isAudioMuted);
+      });
+    }
+
+    function toggleMuteAudio() {
+      isAudioMuted = !isAudioMuted;
+      if (isAudioMuted) {
+        flushAudioPlayback();
+      }
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'set_mute', muted: isAudioMuted }));
+      }
+      syncMuteButtonsUI();
+      updateSendStopButton();
+    }
+
+    let pendingTtsMetaQueue = [];
+    let scheduledTtsTimeline = [];
+    let currentTtsAgentMsg = null;
+    let ttsHighlightRafId = null;
+    let activeTtsTargetMsg = null;
+    let activeTtsSentIdx = -1;
+    let activeTtsWordIdx = -1;
+
+    const TTS_WORD_LOOKAHEAD_S = 0.07; // 70ms lookahead matching WORD_HIGHLIGHT_LEAD_FRAMES = 1680 @ 24kHz
+    const TTS_ABBREVIATIONS = new Set([
+      'mr.', 'mrs.', 'ms.', 'dr.', 'prof.', 'sr.', 'jr.', 'vs.', 'etc.', 'e.g.', 'i.e.', 'u.s.', 'u.k.', 'd.c.'
+    ]);
+
+    function cleanForTtsJS(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/`[^`\n]{40,}`/g, '')
+        .replace(/[*_~`#]/g, '')
+        .replace(/https?:\/\/\S+/g, '')
+        .replace(/[\u{10000}-\u{10FFFF}]/gu, '')
+        .replace(/\bARIES\b/g, 'Aries')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function segmentSpeakableTextJS(fullText, includeIncompleteTail = false) {
+      let src = String(fullText || '');
+      let holdbackTicks = '';
+      if (!includeIncompleteTail) {
+        if (src.endsWith('``') && !src.endsWith('```')) {
+          holdbackTicks = '``';
+          src = src.slice(0, -2);
+        } else if (src.endsWith('`') && !src.endsWith('``')) {
+          holdbackTicks = '`';
+          src = src.slice(0, -1);
+        }
+      }
+
+      const rawParts = src.split('```');
+      const rawBlocks = [];
+      let inFence = false;
+      for (let i = 0; i < rawParts.length; i++) {
+        const part = rawParts[i];
+        if (!inFence) {
+          if (part) rawBlocks.push({ kind: 'prose', text: part });
+        } else {
+          const closed = (i < rawParts.length - 1);
+          rawBlocks.push({ kind: 'code', raw: part, closed });
+        }
+        if (i < rawParts.length - 1) inFence = !inFence;
+      }
+
+      // Track prose buffer exactly like Python StrictSentenceChunker across fenced blocks
+      let proseBuffer = '';
+      let nextSentIdx = 0;
+      const pending = []; // { blockIdx, text }
+      const committedItems = []; // { kind: 'prose', raw, sentIdx } or { kind: 'code', raw, closed }
+      const blockOutputs = rawBlocks.map(() => []);
+
+      function consumeFromPending(charCount, sentIdx) {
+        let rem = charCount;
+        while (rem > 0 && pending.length > 0) {
+          const head = pending[0];
+          const take = Math.min(rem, head.text.length);
+          const slice = head.text.slice(0, take);
+          blockOutputs[head.blockIdx].push({ kind: 'prose', raw: slice, sentIdx });
+          head.text = head.text.slice(take);
+          if (!head.text) pending.shift();
+          rem -= take;
+        }
+      }
+
+      function flushMatchLoop() {
+        while (true) {
+          const m = proseBuffer.match(/([.!?]+|\n+)(\s+|$)/);
+          if (!m) break;
+          const punct = m[1];
+          const pStart = m.index;
+          if (punct === '.' && pStart > 0 && pStart < proseBuffer.length - 1) {
+            if (/[0-9]/.test(proseBuffer[pStart - 1]) && /[0-9]/.test(proseBuffer[pStart + 1])) {
+              break;
+            }
+          }
+          const endPos = pStart + m[0].length;
+          const candidate = proseBuffer.slice(0, pStart + punct.length).trim();
+          const words = candidate ? candidate.toLowerCase().split(/\s+/) : [];
+          if (m[2] === '') {
+            if (words.length < 2 || TTS_ABBREVIATIONS.has(words[words.length - 1])) break;
+          } else {
+            if (words.length > 0 && TTS_ABBREVIATIONS.has(words[words.length - 1])) break;
+          }
+          const chunk = proseBuffer.slice(0, endPos);
+          proseBuffer = proseBuffer.slice(endPos);
+          const isSpoken = cleanForTtsJS(chunk).length > 0;
+          const assignedIdx = isSpoken ? nextSentIdx++ : -1;
+          consumeFromPending(chunk.length, assignedIdx);
+        }
+      }
+
+      for (let bi = 0; bi < rawBlocks.length; bi++) {
+        const blk = rawBlocks[bi];
+        if (blk.kind === 'prose') {
+          proseBuffer += blk.text;
+          pending.push({ blockIdx: bi, text: blk.text });
+          flushMatchLoop();
+        } else {
+          blockOutputs[bi].push({ kind: 'code', raw: blk.raw, closed: blk.closed });
+        }
+      }
+
+      let incompleteTail = '';
+      if (includeIncompleteTail) {
+        if (proseBuffer) {
+          const isSpoken = cleanForTtsJS(proseBuffer).length > 0;
+          const assignedIdx = isSpoken ? nextSentIdx++ : -1;
+          consumeFromPending(proseBuffer.length, assignedIdx);
+          proseBuffer = '';
+        }
+      } else {
+        const lastBlock = rawBlocks[rawBlocks.length - 1];
+        if (lastBlock && lastBlock.kind === 'prose' && !inFence) {
+          const lastBlockIdx = rawBlocks.length - 1;
+          let tailSum = '';
+          const survivingPending = [];
+          for (const frag of pending) {
+            if (frag.blockIdx === lastBlockIdx) {
+              tailSum += frag.text;
+            } else {
+              survivingPending.push(frag);
+            }
+          }
+          for (const frag of survivingPending) {
+            blockOutputs[frag.blockIdx].push({ kind: 'prose', raw: frag.text, sentIdx: -1 });
+          }
+          incompleteTail = (tailSum + holdbackTicks);
+        } else {
+          for (const frag of pending) {
+            blockOutputs[frag.blockIdx].push({ kind: 'prose', raw: frag.text, sentIdx: -1 });
+          }
+        }
+      }
+
+      for (let bi = 0; bi < blockOutputs.length; bi++) {
+        for (const item of blockOutputs[bi]) {
+          committedItems.push(item);
+        }
+      }
+
+      return {
+        items: committedItems,
+        incompleteTail,
+        committedCount: nextSentIdx
+      };
+    }
+
+    function applyTtsHighlightState(targetMsg, sentIdx, wordIdx) {
+      if (
+        activeTtsTargetMsg === targetMsg &&
+        activeTtsSentIdx === sentIdx &&
+        activeTtsWordIdx === wordIdx
+      ) {
+        return;
+      }
+      if (activeTtsTargetMsg && activeTtsTargetMsg !== targetMsg) {
+        activeTtsTargetMsg.querySelectorAll('.tts-sentence.active, .tts-sent-space.active, .tts-word.active')
+          .forEach(el => el.classList.remove('active'));
+      }
+      const prevMsg = activeTtsTargetMsg;
+      activeTtsTargetMsg = targetMsg;
+      activeTtsSentIdx = sentIdx;
+      activeTtsWordIdx = wordIdx;
+
+      const root = targetMsg || prevMsg;
+      if (!root) return;
+      root.querySelectorAll('.tts-sentence.active, .tts-sent-space.active, .tts-word.active')
+        .forEach(el => el.classList.remove('active'));
+      if (!targetMsg || sentIdx < 0) return;
+
+      targetMsg.querySelectorAll(`.tts-sentence[data-sent-idx="${sentIdx}"], .tts-sent-space[data-sent-idx="${sentIdx}"]`)
+        .forEach(el => el.classList.add('active'));
+      if (wordIdx >= 0) {
+        const wEl = targetMsg.querySelector(`.tts-word[data-sent-idx="${sentIdx}"][data-word-idx="${wordIdx}"]`);
+        if (wEl) wEl.classList.add('active');
+      }
+    }
+
+    function forceReapplyTtsHighlightOnMsg(msgEl) {
+      if (!msgEl || msgEl !== activeTtsTargetMsg || activeTtsSentIdx < 0) return;
+      msgEl.querySelectorAll(`.tts-sentence[data-sent-idx="${activeTtsSentIdx}"], .tts-sent-space[data-sent-idx="${activeTtsSentIdx}"]`)
+        .forEach(el => el.classList.add('active'));
+      if (activeTtsWordIdx >= 0) {
+        const wEl = msgEl.querySelector(`.tts-word[data-sent-idx="${activeTtsSentIdx}"][data-word-idx="${activeTtsWordIdx}"]`);
+        if (wEl) wEl.classList.add('active');
+      }
+    }
+
+    function computeWordTimingsForEntry(entry) {
+      if (entry.wordTimings) return entry.wordTimings;
+      let wordsText = [];
+      if (entry.targetMsg) {
+        const wordEls = entry.targetMsg.querySelectorAll(`.tts-word[data-sent-idx="${entry.sentenceIndex}"]`);
+        if (wordEls.length > 0) {
+          wordsText = Array.from(wordEls).map(el => el.textContent || '');
+        }
+      }
+      if (wordsText.length === 0) {
+        wordsText = (entry.rawText || '').trim().split(/\s+/).filter(Boolean);
+      }
+      if (wordsText.length === 0) return [];
+      const dur = Math.max(0.05, entry.endTime - entry.startTime);
+      const weights = wordsText.map(w => {
+        const core = w.replace(/[^a-zA-Z0-9]/g, '').length;
+        let pause = 0;
+        if (/[,;:]$/.test(w)) pause = 2.0;
+        else if (/[.!?]$/.test(w)) pause = 3.2;
+        return Math.max(1.2, core * 0.85 + 1.4 + pause);
+      });
+      const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+      const timings = [];
+      let cursor = entry.startTime;
+      for (let i = 0; i < wordsText.length; i++) {
+        const slice = dur * (weights[i] / totalWeight);
+        const end = (i === wordsText.length - 1) ? entry.endTime : (cursor + slice);
+        timings.push({ wordIndex: i, startTime: cursor, endTime: end });
+        cursor = end;
+      }
+      entry.wordTimings = timings;
+      return timings;
+    }
+
+    function startTtsHighlightLoop() {
+      if (ttsHighlightRafId !== null) return;
+      const tick = () => {
+        if (!audioOutputCtx || scheduledTtsTimeline.length === 0 || isAudioMuted) {
+          applyTtsHighlightState(null, -1, -1);
+          ttsHighlightRafId = null;
+          return;
+        }
+        const now = audioOutputCtx.currentTime;
+        const headTime = now + TTS_WORD_LOOKAHEAD_S;
+
+        // Drop completed sentences cleanly once past their real endTime
+        while (scheduledTtsTimeline.length > 0 && scheduledTtsTimeline[0].endTime < now - 0.02) {
+          scheduledTtsTimeline.shift();
+        }
+        if (scheduledTtsTimeline.length === 0) {
+          applyTtsHighlightState(null, -1, -1);
+          ttsHighlightRafId = null;
+          return;
+        }
+
+        let activeEntry = null;
+        for (const entry of scheduledTtsTimeline) {
+          if (headTime >= entry.startTime && headTime <= entry.endTime) {
+            activeEntry = entry;
+            break;
+          }
+        }
+        if (!activeEntry && now >= scheduledTtsTimeline[0].startTime) {
+          activeEntry = scheduledTtsTimeline[0];
+        }
+
+        if (activeEntry) {
+          const timings = computeWordTimingsForEntry(activeEntry);
+          let wIdx = 0;
+          for (let i = 0; i < timings.length; i++) {
+            if (headTime >= timings[i].startTime) {
+              wIdx = timings[i].wordIndex;
+            }
+          }
+          applyTtsHighlightState(activeEntry.targetMsg, activeEntry.sentenceIndex, wIdx);
+        }
+
+        ttsHighlightRafId = requestAnimationFrame(tick);
+      };
+      ttsHighlightRafId = requestAnimationFrame(tick);
+    }
+
+    function buildCommittedHtmlFromItems(items, prevSentCount) {
+      let html = '';
+      let proseOpen = false;
+      const closeProse = () => {
+        if (proseOpen) {
+          html += '</div>';
+          proseOpen = false;
+        }
+      };
+      const openProse = () => {
+        if (!proseOpen) {
+          html += '<div class="edge-committed-prose">';
+          proseOpen = true;
+        }
+      };
+
+      for (const item of items) {
+        if (item.kind === 'code') {
+          closeProse();
+          const codeLines = String(item.raw || '').replace(/^\n/, '');
+          let lang = 'code';
+          let codeBody = item.raw || '';
+          const firstNl = String(item.raw || '').indexOf('\n');
+          if (firstNl !== -1) {
+            const maybeLang = String(item.raw).slice(0, firstNl).trim();
+            if (/^[a-zA-Z0-9_+#.-]{1,24}$/.test(maybeLang)) {
+              lang = maybeLang;
+              codeBody = String(item.raw).slice(firstNl + 1);
+            }
+          }
+          codeBody = codeBody.replace(/\n$/, '');
+          html += `<div class="edge-code-block"><div class="edge-code-lang">${escapeHtml(lang)}</div><pre><code>${escapeHtml(codeBody)}</code></pre></div>`;
+        } else {
+          openProse();
+          const sentIdx = item.sentIdx;
+          const isNewSent = (sentIdx >= 0 && sentIdx >= prevSentCount);
+          const fadeCls = isNewSent ? ' edge-token-fade' : '';
+          if (sentIdx < 0) {
+            html += `<span class="tts-sent-unspoken">${escapeHtml(item.raw)}</span>`;
+          } else {
+            const tokens = String(item.raw || '').match(/\s+|\S+/g) || [];
+            let lastWordPos = -1;
+            for (let t = tokens.length - 1; t >= 0; t--) {
+              if (!/^\s+$/.test(tokens[t])) {
+                lastWordPos = t;
+                break;
+              }
+            }
+            let wordIdx = 0;
+            for (let t = 0; t < tokens.length; t++) {
+              const tok = tokens[t];
+              if (/^\s+$/.test(tok)) {
+                if (t < lastWordPos) {
+                  html += `<span class="tts-sent-space${fadeCls}" data-sent-idx="${sentIdx}">${escapeHtml(tok)}</span>`;
+                } else {
+                  html += escapeHtml(tok);
+                }
+              } else {
+                html += `<span class="tts-sentence tts-word${fadeCls}" data-sent-idx="${sentIdx}" data-word-idx="${wordIdx++}">${escapeHtml(tok)}</span>`;
+              }
+            }
+          }
+        }
+      }
+      closeProse();
+      return html;
+    }
+
+    function ensureEdgeMessageStructure(bodyEl) {
+      let committedHost = bodyEl.querySelector(':scope > .edge-committed-host');
+      let tailRow = bodyEl.querySelector(':scope > .edge-inflight-tail');
+      if (!committedHost || !tailRow) {
+        bodyEl.innerHTML = `<div class="edge-committed-host"></div><div class="edge-inflight-tail"><span class="edge-tail-text"></span><span class="edge-tail-spinner" aria-hidden="true"></span></div>`;
+        committedHost = bodyEl.querySelector(':scope > .edge-committed-host');
+        tailRow = bodyEl.querySelector(':scope > .edge-inflight-tail');
+      }
+      return { committedHost, tailRow };
+    }
+
+    function renderEdgeAgentBody(msgEl, fullText, isStreaming = false) {
+      if (!msgEl) return;
+      const bodyEl = msgEl.querySelector('.msg-body');
+      if (!bodyEl) return;
+
+      const text = String(fullText || '');
+      bodyEl.dataset.rawText = text;
+      const { committedHost, tailRow } = ensureEdgeMessageStructure(bodyEl);
+      const { items, incompleteTail, committedCount } = segmentSpeakableTextJS(text, !isStreaming);
+
+      const committedSignature = JSON.stringify(items);
+      if (bodyEl._lastCommittedSig !== committedSignature) {
+        const prevSentCount = bodyEl._animatedCommittedSentCount || 0;
+        committedHost.innerHTML = buildCommittedHtmlFromItems(items, prevSentCount);
+        bodyEl._lastCommittedSig = committedSignature;
+        bodyEl._animatedCommittedSentCount = committedCount;
+        // Re-apply active live word/sentence highlight immediately so zero frame flicker occurs
+        forceReapplyTtsHighlightOnMsg(msgEl);
+      }
+
+      const tailDisplay = String(incompleteTail || '').replace(/^\s+/, '');
+      const tailTextEl = tailRow.querySelector('.edge-tail-text');
+      if (isStreaming && tailDisplay.length > 0) {
+        const prevTail = bodyEl._lastTailDisplay || '';
+        if (tailDisplay !== prevTail) {
+          if (prevTail && tailDisplay.startsWith(prevTail)) {
+            const delta = tailDisplay.slice(prevTail.length);
+            if (tailTextEl.childNodes.length === 0) {
+              tailTextEl.textContent = prevTail;
+            }
+            const span = document.createElement('span');
+            span.className = 'edge-token-fade';
+            span.textContent = delta;
+            tailTextEl.appendChild(span);
+          } else {
+            tailTextEl.innerHTML = `<span class="edge-token-fade">${escapeHtml(tailDisplay)}</span>`;
+          }
+          bodyEl._lastTailDisplay = tailDisplay;
+        }
+        tailRow.classList.add('visible');
+      } else {
+        bodyEl._lastTailDisplay = '';
+        tailTextEl.textContent = '';
+        tailRow.classList.remove('visible');
+      }
+    }
+
+    function playAudioChunk(arrayBuffer) {
+      if (isAudioMuted) return;
+      const ctx = getAudioOutputCtx();
+      const int16 = new Int16Array(arrayBuffer);
+      const float32 = new Float32Array(int16.length);
+      for (let i = 0; i < int16.length; i++) {
+        float32[i] = int16[i] / 32768.0;
+      }
+
+      const audioBuffer = ctx.createBuffer(1, float32.length, 24000);
+      audioBuffer.getChannelData(0).set(float32);
+
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      if (outputAnalyserNode) {
+        source.connect(outputAnalyserNode);
+      } else {
+        source.connect(ctx.destination);
+      }
+      startOutputVisualizer();
+
+      const now = ctx.currentTime;
+      if (nextPlayTime < now) {
+        nextPlayTime = now;
+      }
+      const startTime = nextPlayTime;
+      source.start(startTime);
+      nextPlayTime += audioBuffer.duration;
+      const endTime = nextPlayTime;
+
+      const meta = pendingTtsMetaQueue.shift();
+      if (meta) {
+        scheduledTtsTimeline.push({
+          targetMsg: meta.targetMsg || currentTtsAgentMsg,
+          sentenceIndex: meta.sentenceIndex,
+          rawText: meta.text || '',
+          startTime,
+          endTime,
+          wordTimings: null
+        });
+        startTtsHighlightLoop();
+      }
+
+      if (audioEndTimer) {
+        clearTimeout(audioEndTimer);
+        audioEndTimer = null;
+      }
+      const remainingMs = Math.max(0, (nextPlayTime - ctx.currentTime) * 1000) + 60;
+      audioEndTimer = setTimeout(() => {
+        audioEndTimer = null;
+        updateSendStopButton();
+        if (!isServerGenerating && !isRecording) {
+          statusText.textContent = "Ready - Click microphone to speak";
+          statusText.className = "status-text";
+        }
+      }, remainingMs);
+
+      updateSendStopButton();
+      statusText.textContent = "ARIES speaking...";
+      statusText.className = "status-text speaking";
+    }
+
+    function flushAudioPlayback() {
+      pendingTtsMetaQueue = [];
+      scheduledTtsTimeline = [];
+      if (ttsHighlightRafId !== null) {
+        cancelAnimationFrame(ttsHighlightRafId);
+        ttsHighlightRafId = null;
+      }
+      applyTtsHighlightState(null, -1, -1);
+      if (audioEndTimer) {
+        clearTimeout(audioEndTimer);
+        audioEndTimer = null;
+      }
+      if (audioOutputCtx) {
+        try {
+          audioOutputCtx.close();
+        } catch (e) {}
+        audioOutputCtx = null;
+        outputAnalyserNode = null;
+      }
+      if (outputVisRafId !== null) {
+        cancelAnimationFrame(outputVisRafId);
+        outputVisRafId = null;
+      }
+      updateMicOrbitalState();
+      nextPlayTime = 0;
+      updateSendStopButton();
+    }
+
+    // -------------------------------------------------------------
+    // WebSocket Connection
+    // -------------------------------------------------------------
+    function connectWs() {
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const model = modelSelect ? modelSelect.value : 'local-gemma-4-e2b';
+      const voice = voiceSelect ? voiceSelect.value : 'phonon_freya';
+      const sessParam = currentSessionId ? `&session_id=${encodeURIComponent(currentSessionId)}` : '';
+
+      ws = new WebSocket(`${proto}//${window.location.host}/ws?model=${encodeURIComponent(model)}&voice=${encodeURIComponent(voice)}${sessParam}`);
+      ws.binaryType = 'arraybuffer';
+
+      ws.onopen = () => {
+        statusText.textContent = "Ready - Click microphone or hold Spacebar to speak";
+        if (isAudioMuted) {
+          ws.send(JSON.stringify({ type: 'set_mute', muted: true }));
+        }
+      };
+
+      ws.onmessage = (event) => {
+        if (typeof event.data === 'string') {
+          try {
+            const msg = JSON.parse(event.data);
+            handleServerMessage(msg);
+          } catch (e) {}
+        } else {
+          // Binary 24kHz audio from PocketTTS!
+          playAudioChunk(event.data);
+        }
+      };
+
+      ws.onclose = () => {
+        isServerGenerating = false;
+        updateSendStopButton();
+        statusText.textContent = "Reconnecting server...";
+        setTimeout(connectWs, 2000);
+      };
+    }
+
+    let activeAgentMsg = null;
+
+    const consoleDrawer = document.getElementById('consoleDrawer');
+    const consoleBody = document.getElementById('consoleBody');
+    const consoleToggleBtn = document.getElementById('consoleToggleBtn');
+    const consoleStatusDot = document.getElementById('consoleStatusDot');
+    const btnCopyConsole = document.getElementById('btnCopyConsole');
+    const btnClearConsole = document.getElementById('btnClearConsole');
+    const btnCloseWin = document.getElementById('btnCloseWin');
+    const btnMinWin = document.getElementById('btnMinWin');
+    const btnMaxWin = document.getElementById('btnMaxWin');
+    let autoOpenedBootConsole = false;
+
+    function formatConsoleLine(line) {
+      const escaped = escapeHtml(line);
+      return escaped
+        .replace(/\[(ASR|LAUNCHER|CPU)\]/g, '<span class="tag-asr">[$1]</span>')
+        .replace(/\[(TTS|WARMUP|LLM)\]/g, '<span class="tag-tts">[$1]</span>')
+        .replace(/\[(LATENCY)\]/g, '<span class="tag-lat">[$1]</span>')
+        .replace(/\[(READY)\]/g, '<span class="tag-rdy">[$1]</span>')
+        .replace(/\[(ERROR)\]/g, '<span class="tag-err">[$1]</span>');
+    }
+
+    function appendConsoleLine(line) {
+      if (!consoleBody) return;
+      const div = document.createElement('div');
+      div.className = 'console-line';
+      div.innerHTML = formatConsoleLine(line);
+      consoleBody.appendChild(div);
+      consoleBody.scrollTop = consoleBody.scrollHeight;
+    }
+
+    function setEnginesReadyState(ready, statusMsg) {
+      if (ready) {
+        consoleStatusDot.classList.add('ready');
+        if (!isRecording && statusMsg) {
+          statusText.textContent = statusMsg;
+        }
+      } else {
+        consoleStatusDot.classList.remove('ready');
+        if (statusMsg) {
+          statusText.textContent = statusMsg;
+        }
+        // Console starts closed by default; toggles open on user click
+      }
+    }
+
+
+    let welcomeDismissed = false;
+    function dismissWelcome(immediate = false) {
+      if (welcomeDismissed) return;
+      welcomeDismissed = true;
+      const el = document.getElementById('welcomeContainer');
+      if (!el) return;
+      if (immediate) {
+        el.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+      }
+      el.classList.add('fade-out');
+      setTimeout(() => {
+        if (el && el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      }, immediate ? 240 : 550);
+    }
+
+    function initWelcomeShimmer() {
+      welcomeDismissed = false;
+      document.querySelectorAll('.welcome-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const prompt = chip.getAttribute('data-prompt') || chip.textContent;
+          if (textPromptInput && prompt) {
+            textPromptInput.value = prompt;
+            sendUserInput();
+          }
+        });
+      });
+    }
+
+    // Dismiss welcome if chat container or input is interacted with
+    if (chatContainer) {
+      chatContainer.addEventListener('click', () => dismissWelcome(true));
+    }
+    if (textPromptInput) {
+      textPromptInput.addEventListener('focus', () => dismissWelcome(true));
+      textPromptInput.addEventListener('click', () => dismissWelcome(true));
+    }
+
+    initWelcomeShimmer();
+
+    const newChatBtn = document.getElementById('newChatBtn');
+    if (newChatBtn) {
+      newChatBtn.addEventListener('click', () => {
+        // Send reset message to backend
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'new_chat' }));
+        }
+
+        // Cancel audio playback
+        flushAudioPlayback();
+
+        activeAgentMsg = null;
+        currentTtsAgentMsg = null;
+
+        // Reset chat UI with Welcome shimmer
+        chatContainer.innerHTML = `
+          <div class="welcome-container" id="welcomeContainer">
+            <div class="welcome-badge">100% ON-DEVICE · ZERO CLOUD · REAL-TIME INTELLIGENCE</div>
+            <div class="welcome-text" id="welcomeText">ARIES Live</div>
+            <div class="welcome-sub">Autonomous Real-Time Voice &amp; Vision Intelligence</div>
+            <div class="welcome-chips">
+              <button type="button" class="welcome-chip" data-prompt="Tell me about my projects.">⚡ Tell me about my projects</button>
+              <button type="button" class="welcome-chip" data-prompt="Check my Mac's live system status.">🖥️ Check my Mac's live system status</button>
+              <button type="button" class="welcome-chip" data-prompt="Explain unified memory in 2 sentences.">🧠 Explain unified memory in 2 sentences</button>
+            </div>
+            <div class="welcome-hint">Hold <kbd>␣ Space</kbd> to talk or click the microphone</div>
+          </div>
+        `;
+        initWelcomeShimmer();
+
+        statusText.textContent = "Ready — Context refreshed. Click mic or hold Spacebar to talk";
+        statusText.className = "status-text";
+
+        // Brief visual pulse feedback (Neutral)
+        newChatBtn.style.borderColor = 'rgba(255, 255, 255, 0.55)';
+        newChatBtn.style.color = '#ffffff';
+        setTimeout(() => {
+          newChatBtn.style.borderColor = '';
+          newChatBtn.style.color = '';
+        }, 500);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // Dynamic Theme Manager (Green default, Red, Orange, Yellow, Blue, Indigo, Violet, White, Black)
+    // -------------------------------------------------------------
+    const themeSelect = document.getElementById('themeSelect');
+    function applyTheme(themeName) {
+      if (!themeName) themeName = 'green';
+      document.body.setAttribute('data-theme', themeName);
+      try {
+        localStorage.setItem('aries_theme', themeName);
+      } catch (e) {}
+      if (themeSelect) themeSelect.value = themeName;
+    }
+
+    if (themeSelect) {
+      themeSelect.addEventListener('change', (e) => {
+        applyTheme(e.target.value);
+      });
+    }
+
+    let savedTheme = 'green';
+    try {
+      savedTheme = localStorage.getItem('aries_theme') || 'green';
+    } catch (e) {}
+    applyTheme(savedTheme);
+
+    const licensesDrawer = document.getElementById('licensesDrawer');
+    const licensesToggleBtn = document.getElementById('licensesToggleBtn');
+    const btnCloseLicenses = document.getElementById('btnCloseLicenses');
+    const btnCopyLicenses = document.getElementById('btnCopyLicenses');
+
+    let currentSessionId = null;
+    const historyDrawer = document.getElementById('historyDrawer');
+    const memoryDrawer = document.getElementById('memoryDrawer');
+    const historyToggleBtn = document.getElementById('historyToggleBtn');
+    const memoryToggleBtn = document.getElementById('memoryToggleBtn');
+    const historyBody = document.getElementById('historyBody');
+    const memoryBody = document.getElementById('memoryBody');
+    const btnNewSession = document.getElementById('btnNewSession');
+    const btnRefreshHistory = document.getElementById('btnRefreshHistory');
+    const btnCloseHistory = document.getElementById('btnCloseHistory');
+    const btnRefreshMemory = document.getElementById('btnRefreshMemory');
+    const btnCloseMemory = document.getElementById('btnCloseMemory');
+    const btnAddMemoryDoc = document.getElementById('btnAddMemoryDoc');
+    const memoryChunksList = document.getElementById('memoryChunksList');
+    const memoryDocTitle = document.getElementById('memoryDocTitle');
+    const memoryDocContent = document.getElementById('memoryDocContent');
+    const memoryDocDomain = document.getElementById('memoryDocDomain');
+    const memoryHeaderTitle = document.getElementById('memoryHeaderTitle');
+
+    const profileDrawer = document.getElementById('profileDrawer');
+    const profileToggleBtn = document.getElementById('profileToggleBtn');
+    const profileToggleLabel = document.getElementById('profileToggleLabel');
+    const profileEnabledToggle = document.getElementById('profileEnabledToggle');
+    const profileCharTokenCount = document.getElementById('profileCharTokenCount');
+    const profileBudgetFill = document.getElementById('profileBudgetFill');
+    const profileBudgetWarn = document.getElementById('profileBudgetWarn');
+    const profileModeRawBtn = document.getElementById('profileModeRawBtn');
+    const profileModeCardsBtn = document.getElementById('profileModeCardsBtn');
+    const profileRawContainer = document.getElementById('profileRawContainer');
+    const profileFullTextEditor = document.getElementById('profileFullTextEditor');
+    const profileCardsGrid = document.getElementById('profileCardsGrid');
+    const btnAddProfileSection = document.getElementById('btnAddProfileSection');
+    const btnDistillProfile = document.getElementById('btnDistillProfile');
+    const btnResetProfile = document.getElementById('btnResetProfile');
+    const btnSaveProfile = document.getElementById('btnSaveProfile');
+    const btnCloseProfile = document.getElementById('btnCloseProfile');
+
+    function closeAllDrawersExcept(activeDrawer) {
+      const drawers = [consoleDrawer, licensesDrawer, historyDrawer, memoryDrawer, profileDrawer];
+      const buttons = [consoleToggleBtn, licensesToggleBtn, historyToggleBtn, memoryToggleBtn, profileToggleBtn];
+      drawers.forEach((d, i) => {
+        if (d && d !== activeDrawer) {
+          d.classList.remove('open');
+          if (buttons[i]) buttons[i].classList.remove('active');
+        }
+      });
+    }
+
+    const PROFILE_MAX_TOKENS = 2000;
+    const PROFILE_MAX_CHARS = 8000;
+    const PROFILE_PREAMBLE = "[USER PROFILE / MEMORY SUMMARY]:\nThe facts below describe the user you are speaking with, NOT you. Use this background naturally to personalize responses when relevant.";
+    let cachedProfileSections = [];
+    let cachedProfileMeta = {};
+    let profileEditMode = 'raw'; // 'raw' (Full Sent Prompt) or 'cards' (Section Cards)
+
+    function buildFullPromptFromSections(sections) {
+      const blocks = [];
+      (sections || []).forEach(s => {
+        const title = (s.title || '').trim();
+        const content = (s.content || '').trim();
+        if (content) {
+          blocks.push(`### ${title || 'Profile'}\n${content}`);
+        }
+      });
+      if (!blocks.length) return '';
+      return `${PROFILE_PREAMBLE}\n\n${blocks.join('\n\n')}`;
+    }
+
+    function parseFullPromptToSections(fullText) {
+      const raw = (fullText || '').replace(/\r\n/g, '\n').trim();
+      if (!raw) return [];
+      const lines = raw.split('\n');
+      while (lines.length) {
+        const head = lines[0].trim();
+        if (
+          !head ||
+          head.startsWith('[USER PROFILE / MEMORY SUMMARY') ||
+          head.startsWith('Your name is always ARIES') ||
+          head.startsWith('The facts below describe') ||
+          head.startsWith('Use this background naturally') ||
+          head.startsWith('Use this persistent background naturally')
+        ) {
+          lines.shift();
+        } else {
+          break;
+        }
+      }
+      const body = lines.join('\n').trim();
+      if (!body) return [];
+      const byTitle = {};
+      cachedProfileSections.forEach(s => {
+        const k = (s.title || '').trim().toLowerCase();
+        if (k) byTitle[k] = s;
+      });
+      const out = [];
+      let curTitle = null;
+      let curLines = [];
+      const flush = () => {
+        const txt = curLines.join('\n').trim();
+        const title = (curTitle || '').trim();
+        if (!title && !txt) return;
+        const resolvedTitle = title || 'Custom Profile';
+        const prev = byTitle[resolvedTitle.toLowerCase()] || {};
+        out.push({
+          id: prev.id || resolvedTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || `sec_${out.length}`,
+          title: resolvedTitle,
+          subtitle: prev.subtitle || 'User profile memory section.',
+          content: txt,
+        });
+      };
+      body.split('\n').forEach(line => {
+        const m = line.trim().match(/^###\s+(.+)$/);
+        if (m) {
+          if (curTitle !== null || curLines.some(l => l.trim())) flush();
+          curTitle = m[1].trim();
+          curLines = [];
+        } else {
+          curLines.push(line);
+        }
+      });
+      if (curTitle !== null || curLines.some(l => l.trim())) flush();
+      return out;
+    }
+
+    function collectProfileSectionsFromDOM() {
+      if (!profileCardsGrid) return cachedProfileSections;
+      const cards = profileCardsGrid.querySelectorAll('.profile-card');
+      const next = [];
+      cards.forEach((card, i) => {
+        const prev = cachedProfileSections[i] || {};
+        next.push({
+          id: prev.id || `sec_${i}`,
+          title: (card.querySelector('.profile-card-title')?.value || '').trim(),
+          subtitle: (card.querySelector('.profile-card-sub')?.value || '').trim(),
+          content: (card.querySelector('.profile-card-text')?.value || '').trim(),
+        });
+      });
+      cachedProfileSections = next;
+      return next;
+    }
+
+    function updateProfileCharCounter(overrideText = null) {
+      let text = overrideText;
+      if (text === null) {
+        if (profileEditMode === 'raw' && profileFullTextEditor) {
+          text = profileFullTextEditor.value;
+        } else {
+          text = buildFullPromptFromSections(collectProfileSectionsFromDOM());
+        }
+      }
+      const chars = text.length;
+      const approxTokens = chars ? Math.ceil(chars / 4) : 0;
+      const pct = Math.min(100, Math.round((approxTokens / PROFILE_MAX_TOKENS) * 100));
+      const enabled = profileEnabledToggle ? profileEnabledToggle.checked : true;
+
+      let stateClass = '';
+      if (approxTokens > PROFILE_MAX_TOKENS || chars > PROFILE_MAX_CHARS) {
+        stateClass = 'over';
+      } else if (approxTokens >= Math.floor(PROFILE_MAX_TOKENS * 0.75)) {
+        stateClass = 'warn';
+      }
+
+      if (profileCharTokenCount) {
+        profileCharTokenCount.className = `profile-budget-badge ${stateClass}`.trim();
+        const suffix = enabled ? '' : ' (Disabled)';
+        profileCharTokenCount.textContent = `${chars.toLocaleString()} / ${PROFILE_MAX_CHARS.toLocaleString()} chars · ~${approxTokens.toLocaleString()} / ${PROFILE_MAX_TOKENS.toLocaleString()} tok${suffix}`;
+      }
+      if (profileBudgetFill) {
+        profileBudgetFill.className = `profile-budget-fill ${stateClass}`.trim();
+        profileBudgetFill.style.width = `${pct}%`;
+      }
+      if (profileBudgetWarn) {
+        profileBudgetWarn.style.display = (approxTokens > PROFILE_MAX_TOKENS || chars > PROFILE_MAX_CHARS) ? 'block' : 'none';
+      }
+      if (profileToggleLabel) {
+        profileToggleLabel.textContent = enabled ? `Profile (~${approxTokens}t)` : 'Profile (Off)';
+      }
+    }
+
+    function renderProfileCardsGrid(sections) {
+      if (!profileCardsGrid) return;
+      profileCardsGrid.innerHTML = '';
+      (sections || []).forEach((sec, idx) => {
+        const card = document.createElement('div');
+        card.className = 'profile-card';
+        card.innerHTML = `
+          <div class="profile-card-head">
+            <input type="text" class="profile-card-title" value="${escapeHtml(sec.title || '')}" placeholder="Section Title" />
+            <button type="button" class="console-mini-btn profile-remove-btn" title="Remove section">✕</button>
+          </div>
+          <input type="text" class="profile-card-sub" value="${escapeHtml(sec.subtitle || '')}" placeholder="Short description..." />
+          <textarea class="profile-card-text" rows="5">${escapeHtml(sec.content || '')}</textarea>
+        `;
+        card.querySelectorAll('input, textarea').forEach(el => {
+          el.addEventListener('input', () => {
+            const updated = collectProfileSectionsFromDOM();
+            if (profileFullTextEditor) profileFullTextEditor.value = buildFullPromptFromSections(updated);
+            updateProfileCharCounter(profileFullTextEditor ? profileFullTextEditor.value : null);
+          });
+        });
+        card.querySelector('.profile-remove-btn').addEventListener('click', () => {
+          collectProfileSectionsFromDOM();
+          cachedProfileSections.splice(idx, 1);
+          renderProfileCardsGrid(cachedProfileSections);
+          const fullTxt = buildFullPromptFromSections(cachedProfileSections);
+          if (profileFullTextEditor) profileFullTextEditor.value = fullTxt;
+          updateProfileCharCounter(fullTxt);
+        });
+        profileCardsGrid.appendChild(card);
+      });
+    }
+
+    function applyLoadedProfile(data) {
+      const prof = data && data.profile ? data.profile : (data || {});
+      cachedProfileMeta = prof;
+      cachedProfileSections = Array.isArray(prof.sections) ? prof.sections.map(s => ({ ...s })) : [];
+      if (profileEnabledToggle) profileEnabledToggle.checked = !!prof.enabled;
+      const fullPrompt = typeof prof.full_prompt === 'string'
+        ? prof.full_prompt
+        : buildFullPromptFromSections(cachedProfileSections);
+      if (profileFullTextEditor) profileFullTextEditor.value = fullPrompt;
+      renderProfileCardsGrid(cachedProfileSections);
+      updateProfileCharCounter(fullPrompt);
+    }
+
+    function switchProfileEditMode(mode) {
+      if (mode === profileEditMode) return;
+      if (profileEditMode === 'cards') {
+        const secs = collectProfileSectionsFromDOM();
+        if (profileFullTextEditor) profileFullTextEditor.value = buildFullPromptFromSections(secs);
+      } else if (profileFullTextEditor) {
+        cachedProfileSections = parseFullPromptToSections(profileFullTextEditor.value);
+        renderProfileCardsGrid(cachedProfileSections);
+      }
+      profileEditMode = mode;
+      const isRaw = mode === 'raw';
+      if (profileModeRawBtn) profileModeRawBtn.classList.toggle('active', isRaw);
+      if (profileModeCardsBtn) profileModeCardsBtn.classList.toggle('active', !isRaw);
+      if (profileRawContainer) profileRawContainer.style.display = isRaw ? 'block' : 'none';
+      if (profileCardsGrid) profileCardsGrid.style.display = isRaw ? 'none' : 'grid';
+      updateProfileCharCounter();
+    }
+
+    async function loadUserProfile() {
+      try {
+        const resp = await fetch('/api/profile');
+        const data = await resp.json();
+        applyLoadedProfile(data);
+      } catch (err) {
+        if (profileFullTextEditor) profileFullTextEditor.value = `Error loading profile: ${err.message}`;
+      }
+    }
+
+    async function saveUserProfile() {
+      const enabled = profileEnabledToggle ? profileEnabledToggle.checked : true;
+      const payload = { enabled };
+      if (profileEditMode === 'raw' && profileFullTextEditor) {
+        payload.full_text = profileFullTextEditor.value;
+      } else {
+        payload.sections = collectProfileSectionsFromDOM();
+      }
+      if (btnSaveProfile) btnSaveProfile.textContent = 'Saving...';
+      try {
+        const resp = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        applyLoadedProfile(data);
+        if (btnSaveProfile) {
+          btnSaveProfile.textContent = 'Saved!';
+          setTimeout(() => { btnSaveProfile.textContent = 'Save'; }, 1400);
+        }
+      } catch (err) {
+        if (btnSaveProfile) btnSaveProfile.textContent = 'Save';
+        alert('Error saving profile: ' + err.message);
+      }
+    }
+
+    if (profileToggleBtn && profileDrawer) {
+      profileToggleBtn.addEventListener('click', () => {
+        const willOpen = !profileDrawer.classList.contains('open');
+        closeAllDrawersExcept(willOpen ? profileDrawer : null);
+        profileDrawer.classList.toggle('open', willOpen);
+        profileToggleBtn.classList.toggle('active', willOpen);
+        if (willOpen) loadUserProfile();
+      });
+    }
+    if (btnCloseProfile && profileDrawer) {
+      btnCloseProfile.addEventListener('click', () => {
+        profileDrawer.classList.remove('open');
+        if (profileToggleBtn) profileToggleBtn.classList.remove('active');
+      });
+    }
+    if (profileModeRawBtn) profileModeRawBtn.addEventListener('click', () => switchProfileEditMode('raw'));
+    if (profileModeCardsBtn) profileModeCardsBtn.addEventListener('click', () => switchProfileEditMode('cards'));
+    if (profileFullTextEditor) {
+      profileFullTextEditor.addEventListener('input', () => updateProfileCharCounter(profileFullTextEditor.value));
+    }
+    if (btnSaveProfile) btnSaveProfile.addEventListener('click', saveUserProfile);
+    if (profileEnabledToggle) profileEnabledToggle.addEventListener('change', saveUserProfile);
+    if (btnAddProfileSection) {
+      btnAddProfileSection.addEventListener('click', () => {
+        if (profileEditMode === 'raw' && profileFullTextEditor) {
+          cachedProfileSections = parseFullPromptToSections(profileFullTextEditor.value);
+        } else {
+          collectProfileSectionsFromDOM();
+        }
+        cachedProfileSections.push({
+          id: `custom_${Date.now()}`,
+          title: 'New Section',
+          subtitle: 'Custom preferences or project context.',
+          content: '',
+        });
+        renderProfileCardsGrid(cachedProfileSections);
+        if (profileEditMode === 'raw') {
+          switchProfileEditMode('cards');
+        } else {
+          const fullTxt = buildFullPromptFromSections(cachedProfileSections);
+          if (profileFullTextEditor) profileFullTextEditor.value = fullTxt;
+          updateProfileCharCounter(fullTxt);
+        }
+      });
+    }
+    if (btnResetProfile) {
+      btnResetProfile.addEventListener('click', async () => {
+        if (!confirm('Reset User Profile back to your default ARIES Live Max sections?')) return;
+        const resp = await fetch('/api/profile/reset', { method: 'POST' });
+        const data = await resp.json();
+        applyLoadedProfile(data);
+      });
+    }
+    if (btnDistillProfile) {
+      btnDistillProfile.addEventListener('click', async () => {
+        btnDistillProfile.disabled = true;
+        btnDistillProfile.textContent = 'Distilling...';
+        try {
+          const resp = await fetch('/api/profile/distill', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: currentSessionId }),
+          });
+          const res = await resp.json();
+          if (res.profile) applyLoadedProfile(res.profile);
+          btnDistillProfile.textContent = res.added > 0 ? `+${res.added} Added` : 'Up to date';
+          setTimeout(() => { btnDistillProfile.textContent = 'Distill Chat'; }, 2000);
+        } catch (err) {
+          btnDistillProfile.textContent = 'Distill Chat';
+          alert('Distill error: ' + err.message);
+        } finally {
+          btnDistillProfile.disabled = false;
+        }
+      });
+    }
+
+    async function loadSessionsList() {
+      if (!historyBody) return;
+      try {
+        const resp = await fetch('/api/sessions');
+        const sessions = await resp.json();
+        if (!sessions || sessions.length === 0) {
+          historyBody.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:12px;">No past conversations yet. Speak or type to start!</div>';
+          return;
+        }
+        historyBody.innerHTML = '';
+        sessions.forEach(s => {
+          const item = document.createElement('div');
+          item.className = `session-item ${s.id === currentSessionId ? 'active' : ''}`;
+          item.innerHTML = `
+            <div class="session-title" title="${escapeHtml(s.title)}">${escapeHtml(s.title)}</div>
+            <div class="session-meta">
+              <span>${s.message_count} msg</span>
+              <span>${escapeHtml(s.updated_at.split(' ')[0])}</span>
+              <button class="session-del-btn" title="Delete conversation" data-id="${s.id}">✕</button>
+            </div>
+          `;
+          item.addEventListener('click', (e) => {
+            if (e.target.classList.contains('session-del-btn')) {
+              e.stopPropagation();
+              deleteSession(s.id);
+              return;
+            }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: 'switch_session', session_id: s.id }));
+              historyDrawer.classList.remove('open');
+              if (historyToggleBtn) historyToggleBtn.classList.remove('active');
+            }
+          });
+          historyBody.appendChild(item);
+        });
+      } catch (e) {
+        historyBody.innerHTML = `<div style="font-size:0.75rem; color:#f87171; text-align:center;">Error loading history: ${e.message}</div>`;
+      }
+    }
+
+    async function deleteSession(sessionId) {
+      if (!confirm("Delete this conversation?")) return;
+      try {
+        await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' });
+        if (sessionId === currentSessionId) {
+          if (newChatBtn) newChatBtn.click();
+        } else {
+          loadSessionsList();
+        }
+      } catch (e) {}
+    }
+
+    async function loadMemoryData() {
+      if (!memoryChunksList) return;
+      try {
+        const resp = await fetch('/api/memory');
+        const data = await resp.json();
+        const stats = data.stats || {};
+        if (memoryHeaderTitle) {
+          memoryHeaderTitle.textContent = `ARIES LOCAL SEMANTIC MEMORY (${stats.knowledge_chunks || 0} DOCS)`;
+        }
+        const chunks = data.chunks || [];
+        if (chunks.length === 0) {
+          memoryChunksList.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:12px;">Vector store empty. Add documents above!</div>';
+          return;
+        }
+        memoryChunksList.innerHTML = '';
+        chunks.forEach(ch => {
+          const card = document.createElement('div');
+          card.className = 'chunk-card';
+          card.innerHTML = `
+            <div class="chunk-title-row">
+              <span class="chunk-title">${escapeHtml(ch.title || 'Untitled')}</span>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:0.65rem; color:var(--text-muted); font-family:monospace;">${escapeHtml(ch.source_type)}</span>
+                <button class="chunk-del-btn" data-id="${ch.id}" title="Delete chunk">✕</button>
+              </div>
+            </div>
+            <div class="chunk-text">${escapeHtml(ch.content)}</div>
+          `;
+          card.querySelector('.chunk-del-btn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (confirm("Remove this document chunk from vector memory?")) {
+              await fetch(`/api/memory/${ch.id}`, { method: 'DELETE' });
+              loadMemoryData();
+            }
+          });
+          memoryChunksList.appendChild(card);
+        });
+      } catch (e) {
+        memoryChunksList.innerHTML = `<div style="font-size:0.75rem; color:#f87171; text-align:center;">Error loading memory: ${e.message}</div>`;
+      }
+    }
+
+    if (historyToggleBtn && historyDrawer) {
+      historyToggleBtn.addEventListener('click', () => {
+        const willOpen = !historyDrawer.classList.contains('open');
+        closeAllDrawersExcept(willOpen ? historyDrawer : null);
+        historyDrawer.classList.toggle('open', willOpen);
+        historyToggleBtn.classList.toggle('active', willOpen);
+        if (willOpen) loadSessionsList();
+      });
+    }
+
+    if (btnCloseHistory && historyDrawer) {
+      btnCloseHistory.addEventListener('click', () => {
+        historyDrawer.classList.remove('open');
+        if (historyToggleBtn) historyToggleBtn.classList.remove('active');
+      });
+    }
+
+    if (btnRefreshHistory) {
+      btnRefreshHistory.addEventListener('click', loadSessionsList);
+    }
+
+    if (btnNewSession) {
+      btnNewSession.addEventListener('click', () => {
+        historyDrawer.classList.remove('open');
+        if (historyToggleBtn) historyToggleBtn.classList.remove('active');
+        if (newChatBtn) newChatBtn.click();
+      });
+    }
+
+    if (memoryToggleBtn && memoryDrawer) {
+      memoryToggleBtn.addEventListener('click', () => {
+        const willOpen = !memoryDrawer.classList.contains('open');
+        closeAllDrawersExcept(willOpen ? memoryDrawer : null);
+        memoryDrawer.classList.toggle('open', willOpen);
+        memoryToggleBtn.classList.toggle('active', willOpen);
+        if (willOpen) loadMemoryData();
+      });
+    }
+
+    if (btnCloseMemory && memoryDrawer) {
+      btnCloseMemory.addEventListener('click', () => {
+        memoryDrawer.classList.remove('open');
+        if (memoryToggleBtn) memoryToggleBtn.classList.remove('active');
+      });
+    }
+
+    if (btnRefreshMemory) {
+      btnRefreshMemory.addEventListener('click', loadMemoryData);
+    }
+
+    if (btnAddMemoryDoc) {
+      btnAddMemoryDoc.addEventListener('click', async () => {
+        const title = (memoryDocTitle.value || '').trim() || 'none';
+        const content = (memoryDocContent.value || '').trim();
+        const domain = memoryDocDomain.value || 'qa';
+        if (!content) {
+          alert('Please enter document content to index.');
+          return;
+        }
+        btnAddMemoryDoc.disabled = true;
+        btnAddMemoryDoc.textContent = 'Indexing into ARIES Memory...';
+        try {
+          const res = await fetch('/api/memory', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content, domain })
+          });
+          const json = await res.json();
+          if (json.status === 'indexed') {
+            memoryDocTitle.value = '';
+            memoryDocContent.value = '';
+            loadMemoryData();
+          } else {
+            alert('Failed to index document: ' + (json.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Network error: ' + err.message);
+        } finally {
+          btnAddMemoryDoc.disabled = false;
+          btnAddMemoryDoc.textContent = 'Index Document';
+        }
+      });
+    }
+
+    if (licensesToggleBtn && licensesDrawer) {
+      licensesToggleBtn.addEventListener('click', () => {
+        const willOpen = !licensesDrawer.classList.contains('open');
+        closeAllDrawersExcept(willOpen ? licensesDrawer : null);
+        licensesDrawer.classList.toggle('open', willOpen);
+        licensesToggleBtn.classList.toggle('active', willOpen);
+      });
+    }
+
+    if (btnCloseLicenses && licensesDrawer) {
+      btnCloseLicenses.addEventListener('click', () => {
+        licensesDrawer.classList.remove('open');
+        if (licensesToggleBtn) licensesToggleBtn.classList.remove('active');
+      });
+    }
+
+    if (btnCopyLicenses) {
+      btnCopyLicenses.addEventListener('click', () => {
+        const summary = [
+          'ARIES Live for Mac',
+          'Version: 0.1 (Beta)',
+          'Platform: macOS (Apple Silicon arm64)',
+          'Architecture: 100% Offline Edge Voice & Vision Assistant',
+          'Privacy: Strictly Local (Zero Cloud Telemetry)',
+          'Copyright: © 2026 ARIES Live Technologies. All rights reserved.',
+          '',
+          'Third-Party Open Source Notices:',
+          '• Google Gemma 4 (Apache 2.0) - Copyright (c) Google LLC',
+          '• NVIDIA NeMo Parakeet (CC-BY-4.0) - Copyright (c) 2024 NVIDIA Corporation',
+          '• Google EmbeddingGemma 2 (Apache 2.0) - Copyright (c) Google LLC',
+          '• llama.cpp / llama-server (MIT) - Copyright (c) 2023-2026 Georgi Gerganov',
+          '• Google AI Edge Phonon 31M (Apache 2.0) - Copyright (c) Google LLC',
+          '• Google MediaPipe & LiteRT (Apache 2.0) - Copyright (c) Google LLC',
+          '• Kokoro 82M (Apache 2.0) - Copyright (c) 2024-2025 hexgrad',
+          '• Xiaomi Sherpa-ONNX (Apache 2.0) - Copyright (c) 2022-2026 Xiaomi Corporation',
+          '• OpenAI OpenAPI Vision Schema (Apache 2.0) - Copyright (c) OpenAI',
+          '• pywebview & NumPy (BSD 3-Clause) - Copyright (c) pywebview & NumPy Developers',
+          '• Plus Jakarta Sans (SIL OFL 1.1) - Copyright (c) Tokotype'
+        ].join('\n');
+        navigator.clipboard.writeText(summary);
+        btnCopyLicenses.textContent = 'Copied!';
+        setTimeout(() => { btnCopyLicenses.textContent = 'Copy Info'; }, 1200);
+      });
+    }
+
+    const licenseSearchInput = document.getElementById('licenseSearchInput');
+    if (licenseSearchInput) {
+      licenseSearchInput.addEventListener('input', () => {
+        const q = licenseSearchInput.value.toLowerCase().trim();
+        document.querySelectorAll('.license-card').forEach(card => {
+          const txt = card.textContent.toLowerCase();
+          card.style.display = (!q || txt.includes(q)) ? '' : 'none';
+        });
+      });
+    }
+
+    const btnViewFullLicenses = document.getElementById('btnViewFullLicenses');
+    const fullLicensesView = document.getElementById('fullLicensesView');
+    if (btnViewFullLicenses && fullLicensesView) {
+      btnViewFullLicenses.addEventListener('click', async () => {
+        const isVisible = fullLicensesView.style.display === 'block';
+        if (isVisible) {
+          fullLicensesView.style.display = 'none';
+          btnViewFullLicenses.textContent = 'View Full LICENSES.md';
+        } else {
+          if (!fullLicensesView.dataset.loaded) {
+            try {
+              const resp = await fetch('/api/licenses');
+              const data = await resp.json();
+              fullLicensesView.textContent = data.markdown || 'LICENSES.md not found on server.';
+              fullLicensesView.dataset.loaded = 'true';
+            } catch (e) {
+              fullLicensesView.textContent = 'Error loading LICENSES.md';
+            }
+          }
+          fullLicensesView.style.display = 'block';
+          btnViewFullLicenses.textContent = 'Hide Full LICENSES.md';
+        }
+      });
+    }
+
+    document.querySelectorAll('.license-expand-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        const detailsEl = document.getElementById(targetId);
+        if (detailsEl) {
+          detailsEl.classList.toggle('expanded');
+          btn.textContent = detailsEl.classList.contains('expanded') ? 'Hide Notice' : 'View Notice';
+        }
+      });
+    });
+
+    if (consoleToggleBtn) {
+      consoleToggleBtn.addEventListener('click', () => {
+        const willOpen = !consoleDrawer.classList.contains('open');
+        closeAllDrawersExcept(willOpen ? consoleDrawer : null);
+        consoleDrawer.classList.toggle('open', willOpen);
+        consoleToggleBtn.classList.toggle('active', willOpen);
+      });
+    }
+    if (btnClearConsole) {
+      btnClearConsole.addEventListener('click', () => {
+        consoleBody.innerHTML = '';
+      });
+    }
+    if (btnCopyConsole) {
+      btnCopyConsole.addEventListener('click', () => {
+        navigator.clipboard.writeText(consoleBody.innerText || '');
+        btnCopyConsole.textContent = 'Copied!';
+        setTimeout(() => { btnCopyConsole.textContent = 'Copy'; }, 1200);
+      });
+    }
+    if (btnCloseWin) {
+      btnCloseWin.addEventListener('click', () => {
+        if (window.pywebview && window.pywebview.api) {
+          window.pywebview.api.close_window();
+        } else {
+          window.close();
+        }
+      });
+    }
+    if (btnMinWin) {
+      btnMinWin.addEventListener('click', () => {
+        if (window.pywebview && window.pywebview.api) {
+          window.pywebview.api.minimize_window();
+        }
+      });
+    }
+    if (btnMaxWin) {
+      btnMaxWin.addEventListener('click', async () => {
+        if (window.pywebview && window.pywebview.api) {
+          const isMax = await window.pywebview.api.toggle_maximize();
+          document.body.classList.toggle('maximized', !!isMax);
+        }
+      });
+    }
+
+    function updateSpeedHud(tokS, isActive = false, ttftMs = null) {
+      if (!speedPill || !speedText) return;
+      if (typeof tokS === 'number' && tokS > 0) {
+        speedText.textContent = `${tokS.toFixed(1)} tok/s`;
+        speedPill.classList.toggle('active', !!isActive);
+        const parts = [`${tokS.toFixed(1)} tok/s`];
+        if (ttftMs != null) parts.push(`TTFT ${ttftMs}ms`);
+        speedPill.title = parts.join(' · ');
+      } else if (!isActive) {
+        speedPill.classList.remove('active');
+      }
+    }
+
+    function updateMessageMetrics(msgEl, metrics, isLive = false) {
+      if (!msgEl || !metrics) return;
+      const host = msgEl.querySelector('.msg-metrics');
+      if (!host) return;
+      const merged = Object.assign(msgEl._metrics || {}, metrics);
+      msgEl._metrics = merged;
+
+      const pills = [];
+      if (typeof merged.tok_s === 'number' && merged.tok_s > 0) {
+        pills.push(`<span class="metric-pill speed">⚡ ${merged.tok_s.toFixed(1)} tok/s</span>`);
+      }
+      if (typeof merged.ttft_ms === 'number') {
+        pills.push(`<span class="metric-pill">TTFT ${merged.ttft_ms}ms</span>`);
+      }
+      if (typeof merged.asr_ms === 'number') {
+        pills.push(`<span class="metric-pill">Voice ${merged.asr_ms}ms</span>`);
+      }
+      if (typeof merged.ttfa_ms === 'number') {
+        pills.push(`<span class="metric-pill">Audio ${merged.ttfa_ms}ms</span>`);
+      }
+      host.innerHTML = pills.join('');
+    }
+
+    function handleServerMessage(msg) {
+      if (msg.type === 'session_active') {
+        currentSessionId = msg.session_id;
+        loadSessionsList();
+      } else if (msg.type === 'session_loaded') {
+        currentSessionId = msg.session_id;
+        flushAudioPlayback();
+        activeAgentMsg = null;
+        currentTtsAgentMsg = null;
+        chatContainer.innerHTML = '';
+        (msg.messages || []).forEach(m => {
+          addMessage(m.role, m.role === 'user' ? 'YOU' : 'ARIES', m.content, null, null, false);
+        });
+        loadSessionsList();
+      } else if (msg.type === 'rag_retrieval') {
+        addRagBadge(msg.matches);
+      } else if (msg.type === 'console_init') {
+        consoleBody.innerHTML = '';
+        (msg.logs || []).forEach(appendConsoleLine);
+        setEnginesReadyState(msg.ready, msg.status_text);
+      } else if (msg.type === 'console_log') {
+        appendConsoleLine(msg.line);
+        setEnginesReadyState(msg.ready, msg.status_text);
+      } else if (msg.type === 'quota_update') {
+        if (quotaText) quotaText.textContent = `ARIES Local Engine (Unlimited)`;
+      } else if (msg.type === 'context_cleared') {
+        isServerGenerating = false;
+        activeAgentMsg = null;
+        currentTtsAgentMsg = null;
+        updateSendStopButton();
+        console.log("Conversation context refreshed on server.");
+        loadSessionsList();
+      } else if (msg.type === 'user_transcript') {
+        flushAudioPlayback();
+        isServerGenerating = true;
+        updateSendStopButton();
+        startOutputVisualizer();
+        const uMsg = addMessage('user', 'YOU', msg.text);
+        if (uMsg && typeof msg.asr_ms === 'number') {
+          const badge = document.createElement('div');
+          badge.className = 'user-asr-badge';
+          badge.textContent = `🎤 ${msg.asr_ms}ms Voice Capture`;
+          uMsg.appendChild(badge);
+        }
+        statusText.textContent = `ARIES thinking...`;
+        statusText.className = "status-text speaking";
+      } else if (msg.type === 'tts_sentence_chunk') {
+        const target = activeAgentMsg || currentTtsAgentMsg;
+        pendingTtsMetaQueue.push({
+          sentenceIndex: msg.sentence_index,
+          text: msg.text || '',
+          durationS: msg.duration_s || 0,
+          targetMsg: target
+        });
+        if (target && typeof msg.ttfa_ms === 'number') {
+          updateMessageMetrics(target, { ttfa_ms: msg.ttfa_ms }, true);
+        }
+      } else if (msg.type === 'agent_transcript_chunk') {
+        isServerGenerating = true;
+        updateSendStopButton();
+        startOutputVisualizer();
+        const fullText = msg.full_text || msg.chunk || '';
+        if (!activeAgentMsg) {
+          activeAgentMsg = addMessage('agent', 'ARIES', fullText, null, null, true);
+        } else {
+          renderEdgeAgentBody(activeAgentMsg, fullText, true);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        currentTtsAgentMsg = activeAgentMsg;
+        if (typeof msg.tok_s === 'number') {
+          updateSpeedHud(msg.tok_s, true, msg.ttft_ms);
+          updateMessageMetrics(activeAgentMsg, { tok_s: msg.tok_s, ttft_ms: msg.ttft_ms }, true);
+        }
+      } else if (msg.type === 'agent_transcript') {
+        if (!activeAgentMsg) {
+          activeAgentMsg = addMessage('agent', 'ARIES', msg.text, null, null, false);
+        } else {
+          renderEdgeAgentBody(activeAgentMsg, msg.text, false);
+        }
+        currentTtsAgentMsg = activeAgentMsg;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (msg.type === 'turn_complete') {
+        isServerGenerating = false;
+        const completedMsg = activeAgentMsg || currentTtsAgentMsg;
+        if (activeAgentMsg) {
+          const bodyEl = activeAgentMsg.querySelector('.msg-body');
+          if (bodyEl && bodyEl.dataset.rawText != null) {
+            renderEdgeAgentBody(activeAgentMsg, bodyEl.dataset.rawText, false);
+          }
+          currentTtsAgentMsg = activeAgentMsg;
+          activeAgentMsg = null;
+        }
+        if (msg.metrics) {
+          updateSpeedHud(msg.metrics.tok_s, false, msg.metrics.ttft_ms, msg.metrics.draft_accepted, msg.metrics.draft_total);
+          if (completedMsg) updateMessageMetrics(completedMsg, msg.metrics, false);
+        } else {
+          updateSpeedHud(null, false);
+        }
+        updateMicOrbitalState();
+        updateSendStopButton();
+        if (!isRecording && !isAudioPlaying()) {
+          statusText.textContent = "Ready - Click microphone to speak";
+          statusText.className = "status-text";
+        }
+      } else if (msg.type === 'no_speech_detected') {
+        isServerGenerating = false;
+        updateSendStopButton();
+        statusText.textContent = "No voice heard. Please speak into mic.";
+        statusText.className = "status-text";
+      } else if (msg.type === 'mute_state') {
+        isAudioMuted = !!msg.muted;
+        syncMuteButtonsUI();
+        updateSendStopButton();
+      } else if (msg.type === 'tool_call') {
+        if (activeAgentMsg) {
+          const bodyEl = activeAgentMsg.querySelector('.msg-body');
+          if (bodyEl && bodyEl.dataset.rawText != null) {
+            renderEdgeAgentBody(activeAgentMsg, bodyEl.dataset.rawText, false);
+          }
+          activeAgentMsg = null;
+        }
+        addToolCard(msg.name, msg.args);
+      } else if (msg.type === 'tool_result') {
+        updateToolCard(msg.name, msg.result);
+      } else if (msg.type === 'mic_levels') {
+        if (isRecording && Array.isArray(msg.levels)) {
+          const n = visualizerBars.length;
+          const srcLen = msg.levels.length || 1;
+          for (let i = 0; i < n; i++) {
+            const srcIdx = Math.min(srcLen - 1, Math.floor((i / n) * srcLen));
+            const val = msg.levels[srcIdx] || 0;
+            visualizerBars[i].style.height = `${Math.max(6, (val / 255) * 30)}px`;
+          }
+        }
+      } else if (msg.type === 'mic_error') {
+        isRecording = false;
+        recordBtn.classList.remove('recording');
+        statusText.textContent = "Microphone error: " + (msg.error || "Unknown");
+        statusText.className = "status-text";
+      }
+    }
+
+    function addRagBadge(matches) {
+      if (!matches || !matches.length) return;
+      dismissWelcome(true);
+      const badge = document.createElement('div');
+      badge.className = 'rag-badge';
+      const titles = matches.map(m => m.title).filter(t => t && t !== 'none').join(', ') || 'Internal knowledge';
+      badge.innerHTML = `
+        <svg style="width:11px;height:11px;fill:currentColor;flex-shrink:0;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm0-4h-2V7h2v7z"/></svg>
+        <span>ARIES Memory: <strong>${escapeHtml(titles)}</strong></span>
+      `;
+      chatContainer.appendChild(badge);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function addMessage(role, sender, text, mediaPreviewUrl = null, mediaLabel = null, isStreaming = false) {
+      dismissWelcome(true);
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      let mediaHtml = '';
+      if (mediaPreviewUrl) {
+        if (mediaPreviewUrl.startsWith('data:video/')) {
+          mediaHtml = `<div class="message-media"><video src="${mediaPreviewUrl}" controls playsinline style="max-height:220px; max-width:100%; border-radius:8px;"></video></div>`;
+        } else {
+          mediaHtml = `<div class="message-media"><img src="${mediaPreviewUrl}" alt="Attachment"></div>`;
+        }
+      }
+      const labelBadge = mediaLabel ? `<span style="opacity:0.65; font-size:0.75rem; margin-left:6px; font-weight:normal;">${escapeHtml(mediaLabel)}</span>` : '';
+      const footerHtml = role === 'agent'
+        ? `<div class="msg-footer"><button class="mute-reply-btn${isAudioMuted ? ' muted' : ''}" type="button" title="${isAudioMuted ? 'Unmute Spoken Audio' : 'Mute Spoken Audio'}">${getMuteButtonInnerHtml(isAudioMuted)}</button><div class="msg-metrics"></div></div>`
+        : '';
+      div.innerHTML = `<div class="sender-tag">${sender}${labelBadge}</div>${mediaHtml}<div class="msg-body"></div>${footerHtml}`;
+      if (role === 'agent') {
+        const muteBtn = div.querySelector('.mute-reply-btn');
+        if (muteBtn) muteBtn.addEventListener('click', toggleMuteAudio);
+        renderEdgeAgentBody(div, text, isStreaming);
+      } else {
+        div.querySelector('.msg-body').textContent = text || '';
+      }
+      chatContainer.appendChild(div);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return div;
+    }
+
+    function addToolCard(name, args) {
+      const card = document.createElement('div');
+      card.className = 'tool-card';
+      card.id = `tool-${name}`;
+      card.innerHTML = `
+        <div class="tool-header">
+          <div class="tool-spinner"></div>
+          <span>Tool Running: <strong>${name}</strong></span>
+        </div>
+        <div class="tool-result">Args: ${JSON.stringify(args)}</div>
+      `;
+      chatContainer.appendChild(card);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function updateToolCard(name, result) {
+      const card = document.getElementById(`tool-${name}`);
+      if (card) {
+        card.innerHTML = `
+          <div class="tool-header" style="color: #10b981;">
+            <span>✓ Tool Completed: <strong>${name}</strong></span>
+          </div>
+          <div class="tool-result">${JSON.stringify(result, null, 2)}</div>
+        `;
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // -------------------------------------------------------------
+    // Raw PCM Audio Recording (16kHz to Parakeet ASR — Kept Warm for <1ms Push-to-Talk)
+    // -------------------------------------------------------------
+    let activeMicDeviceId = null;
+    const hasBrowserMic = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    let usingNativeMic = false;
+
+    async function ensureWarmMicrophone() {
+      const deviceId = deviceSelect.value || "";
+      const streamActive = mediaStream && mediaStream.getAudioTracks().some(t => t.readyState === "live");
+
+      if (streamActive && audioInputCtx && scriptProcessor && activeMicDeviceId === deviceId) {
+        if (audioInputCtx.state === "suspended") {
+          await audioInputCtx.resume();
+        }
+        return;
+      }
+
+      // Clean up any stale stream before switching devices
+      if (scriptProcessor) { try { scriptProcessor.disconnect(); } catch (e) {} scriptProcessor = null; }
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+      if (audioInputCtx) { try { await audioInputCtx.close(); } catch (e) {} audioInputCtx = null; }
+
+      const constraints = {
+        audio: {
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          channelCount: 1,
+          sampleRate: 16000,
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      };
+
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      activeMicDeviceId = deviceId;
+      audioInputCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      const source = audioInputCtx.createMediaStreamSource(mediaStream);
+
+      analyserNode = audioInputCtx.createAnalyser();
+      analyserNode.fftSize = 32;
+      source.connect(analyserNode);
+
+      // 16kHz PCM Audio Stream Processor (1024 samples = 64ms ultra-low-latency frames)
+      scriptProcessor = audioInputCtx.createScriptProcessor(1024, 1, 1);
+      source.connect(scriptProcessor);
+      scriptProcessor.connect(audioInputCtx.destination);
+
+      scriptProcessor.onaudioprocess = (e) => {
+        if (!isRecording || !ws || ws.readyState !== WebSocket.OPEN) return;
+        const input = e.inputBuffer.getChannelData(0);
+        const int16 = new Int16Array(input.length);
+        for (let i = 0; i < input.length; i++) {
+          const s = Math.max(-1, Math.min(1, input[i]));
+          int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        }
+        ws.send(int16.buffer);
+      };
+    }
+
+    async function startRecording() {
+      dismissWelcome(true);
+      flushAudioPlayback();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "interrupt" }));
+      }
+
+      try {
+        getAudioOutputCtx();
+        if (hasBrowserMic()) {
+          usingNativeMic = false;
+          await ensureWarmMicrophone();
+          isRecording = true;
+          try { window.pywebview?.api?.set_ptt_active?.(true); } catch (_) {}
+          recordBtn.classList.add('recording');
+          statusText.textContent = "Listening... Speak now";
+          statusText.className = "status-text recording";
+          startVisualizer();
+        } else {
+          usingNativeMic = true;
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "native_mic_start", device_id: deviceSelect.value || "" }));
+          }
+          isRecording = true;
+          try { window.pywebview?.api?.set_ptt_active?.(true); } catch (_) {}
+          recordBtn.classList.add('recording');
+          statusText.textContent = "Listening... Speak now";
+          statusText.className = "status-text recording";
+        }
+      } catch (err) {
+        alert("Microphone error: " + err.message);
+      }
+    }
+
+    function stopRecording() {
+      if (!isRecording) return;
+      isRecording = false;
+      try { window.pywebview?.api?.set_ptt_active?.(false); } catch (_) {}
+      recordBtn.classList.remove('recording');
+      statusText.textContent = "Transcribing voice...";
+      statusText.className = "status-text";
+
+      if (animFrame) {
+        cancelAnimationFrame(animFrame);
+        animFrame = null;
+      }
+      visualizerBars.forEach(b => b.style.height = '6px');
+
+      // Trigger instant Parakeet ASR on backend!
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: usingNativeMic ? "native_mic_stop" : "audio_stream_end" }));
+        isServerGenerating = true;
+        updateSendStopButton();
+      }
+    }
+
+    function startVisualizer() {
+      const data = new Uint8Array(analyserNode.frequencyBinCount);
+      function draw() {
+        if (!isRecording) return;
+        analyserNode.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < visualizerBars.length; i++) {
+          const val = data[i * 2] || 0;
+          sum += val;
+          const height = Math.max(6, (val / 255) * 30);
+          visualizerBars[i].style.height = `${height}px`;
+        }
+        animFrame = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    recordBtn.addEventListener('click', () => {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    });
+
+    // Spacebar Push-to-Talk
+    function isEditableTarget(el) {
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !isEditableTarget(e.target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!e.repeat && !isRecording) {
+          dismissWelcome(true);
+          startRecording();
+        }
+      }
+    }, true);
+    window.addEventListener('keypress', (e) => {
+      if (e.code === 'Space' && !isEditableTarget(e.target)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'Space' && !isEditableTarget(e.target)) {
+        e.preventDefault();
+        if (isRecording) {
+          stopRecording();
+        }
+      }
+    }, true);
+    window.addEventListener('blur', () => {
+      if (isRecording) {
+        stopRecording();
+      }
+    });
+
+    // -------------------------------------------------------------
+    // Multimodal & Send
+    // -------------------------------------------------------------
+    attachBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('click', (e) => {
+      e.target.value = '';
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const isVideo = file.type.startsWith('video/');
+
+      if (isVideo) {
+        previewStatus.textContent = 'Extracting video preview...';
+        previewName.textContent = `🎥 ${file.name}`;
+        attachmentPreview.classList.add('active');
+        if (!textPromptInput.value.trim() || textPromptInput.value.startsWith('Describe this') || textPromptInput.value.startsWith('What is')) {
+          textPromptInput.value = 'What is shown in this video clip?';
+        }
+
+        const videoEl = document.createElement('video');
+        videoEl.preload = 'metadata';
+        videoEl.muted = true;
+        videoEl.playsInline = true;
+        const objectUrl = URL.createObjectURL(file);
+        videoEl.src = objectUrl;
+
+        let frameCaptured = false;
+        const captureFrame = () => {
+          if (frameCaptured) return;
+          frameCaptured = true;
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.min(1024, videoEl.videoWidth || 640);
+            canvas.height = Math.round(canvas.width * ((videoEl.videoHeight || 360) / (videoEl.videoWidth || 640)));
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            URL.revokeObjectURL(objectUrl);
+
+            attachedFrames = [dataUrl.split(',')[1]];
+            attachedPreviewUrl = dataUrl;
+            attachedLabel = `🎥 ${file.name} (${canvas.width}x${canvas.height})`;
+            previewThumb.src = dataUrl;
+            previewName.textContent = attachedLabel;
+            previewStatus.textContent = `Video ready (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+          } catch (err) {
+            URL.revokeObjectURL(objectUrl);
+            fallbackVideoRead(file);
+          }
+        };
+
+        videoEl.onloadeddata = () => {
+          videoEl.currentTime = Math.min(0.5, (videoEl.duration || 1) / 4);
+        };
+        videoEl.onseeked = captureFrame;
+        videoEl.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          fallbackVideoRead(file);
+        };
+        setTimeout(() => {
+          if (!frameCaptured) captureFrame();
+        }, 1500);
+
+        function fallbackVideoRead(f) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            attachedFrames = [dataUrl.split(',')[1]];
+            attachedPreviewUrl = dataUrl;
+            attachedLabel = `🎥 ${f.name}`;
+            previewName.textContent = attachedLabel;
+            previewStatus.textContent = `Ready (${(f.size / (1024 * 1024)).toFixed(1)} MB)`;
+          };
+          reader.readAsDataURL(f);
+        }
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const dataUrl = ev.target.result;
+          attachedFrames = [dataUrl.split(',')[1]];
+          attachedPreviewUrl = dataUrl;
+          attachedLabel = `📷 ${file.name}`;
+          previewThumb.src = dataUrl;
+          previewName.textContent = file.name;
+          previewStatus.textContent = `Ready (${(file.size / 1024).toFixed(1)} KB)`;
+          attachmentPreview.classList.add('active');
+          if (!textPromptInput.value.trim() || textPromptInput.value.startsWith('Describe this') || textPromptInput.value.startsWith('What is')) {
+            textPromptInput.value = 'Describe this image in detail.';
+            textPromptInput.select();
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeAttachmentBtn.addEventListener('click', clearAttachment);
+
+    function clearAttachment() {
+      attachedFrames = [];
+      attachedPreviewUrl = null;
+      attachedLabel = '';
+      fileInput.value = '';
+      attachmentPreview.classList.remove('active');
+      previewThumb.src = '';
+      if (textPromptInput.value === 'Describe this image in detail.' || textPromptInput.value === 'What is shown in this video clip?' || textPromptInput.value === 'What is currently shown on my screen?') {
+        textPromptInput.value = '';
+      }
+    }
+
+    screenBtn.addEventListener('click', async () => {
+      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+        if (!screenStream) {
+          try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            screenVideo.srcObject = screenStream;
+            screenBar.classList.add('active');
+            const track = screenStream.getVideoTracks()[0];
+            screenLabel.textContent = `Screen: ${track.label || 'Active'}`;
+            track.onended = stopScreenShare;
+            setTimeout(snapScreen, 400);
+          } catch (e) {}
+        } else {
+          snapScreen();
+        }
+      } else {
+        try {
+          const resp = await fetch('/api/screenshot');
+          if (!resp.ok) return;
+          const data = await resp.json();
+          if (data.base64 && data.data_url) {
+            attachedFrames = [data.base64];
+            attachedPreviewUrl = data.data_url;
+            attachedLabel = `🖥️ Screen Snapshot (${data.width}x${data.height})`;
+            previewThumb.src = data.data_url;
+            previewName.textContent = attachedLabel;
+            previewStatus.textContent = "Screen attached";
+            attachmentPreview.classList.add('active');
+            if (!textPromptInput.value.trim() || textPromptInput.value.startsWith('Describe this') || textPromptInput.value.startsWith('What is')) {
+              textPromptInput.value = 'What is currently shown on my screen?';
+            }
+          }
+        } catch (e) {}
+      }
+    });
+
+    function snapScreen() {
+      if (!screenVideo.videoWidth) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.min(1024, screenVideo.videoWidth);
+      canvas.height = Math.round(canvas.width * (screenVideo.videoHeight / screenVideo.videoWidth));
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      attachedFrames = [dataUrl.split(',')[1]];
+      attachedPreviewUrl = dataUrl;
+      attachedLabel = `🖥️ Screen Snapshot (${canvas.width}x${canvas.height})`;
+      previewThumb.src = dataUrl;
+      previewName.textContent = attachedLabel;
+      previewStatus.textContent = "Screen attached";
+      attachmentPreview.classList.add('active');
+      if (!textPromptInput.value.trim() || textPromptInput.value.startsWith('Describe this') || textPromptInput.value.startsWith('What is')) {
+        textPromptInput.value = 'What is currently shown on my screen?';
+      }
+    }
+
+    snapScreenBtn.addEventListener('click', snapScreen);
+
+    function stopScreenShare() {
+      if (screenStream) {
+        screenStream.getTracks().forEach(t => t.stop());
+        screenStream = null;
+      }
+      screenVideo.srcObject = null;
+      screenBar.classList.remove('active');
+    }
+    stopScreenBtn.addEventListener('click', stopScreenShare);
+
+    async function sendUserInput() {
+      let text = textPromptInput.value.trim();
+      const frames = [...attachedFrames];
+      const previewUrl = attachedPreviewUrl;
+      const label = attachedLabel;
+
+      if (!text && frames.length > 0) {
+        text = "Describe this visual attachment in detail.";
+      }
+      if (!text && frames.length === 0) return;
+
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert("Connecting to server...");
+        return;
+      }
+
+      flushAudioPlayback();
+      getAudioOutputCtx();
+      addMessage('user', 'YOU', text, previewUrl, label);
+
+      ws.send(JSON.stringify({
+        type: "text_prompt",
+        text: text,
+        images: frames
+      }));
+
+      textPromptInput.value = '';
+      clearAttachment();
+      isServerGenerating = true;
+      updateSendStopButton();
+      statusText.textContent = "ARIES generating...";
+      statusText.className = "status-text speaking";
+    }
+
+    // Direct Clipboard Image Paste (Ctrl+V)
+    window.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (!file) continue;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            attachedFrames = [dataUrl.split(',')[1]];
+            attachedPreviewUrl = dataUrl;
+            attachedLabel = `📋 Pasted Image (${(file.size / 1024).toFixed(1)} KB)`;
+            previewThumb.src = dataUrl;
+            previewName.textContent = attachedLabel;
+            previewStatus.textContent = `Ready (${(file.size / 1024).toFixed(1)} KB)`;
+            attachmentPreview.classList.add('active');
+            if (!textPromptInput.value.trim() || textPromptInput.value.startsWith('Describe this') || textPromptInput.value.startsWith('What is')) {
+              textPromptInput.value = 'Describe this image in detail.';
+              textPromptInput.select();
+            }
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    });
+
+
+    // Drag & Drop Image Handler
+    window.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            attachedFrames = [dataUrl.split(',')[1]];
+            attachedPreviewUrl = dataUrl;
+            attachedLabel = `📷 ${file.name}`;
+            previewThumb.src = dataUrl;
+            previewName.textContent = file.name;
+            previewStatus.textContent = `Ready (${(file.size / 1024).toFixed(1)} KB)`;
+            attachmentPreview.classList.add('active');
+            textPromptInput.value = 'Describe this image in detail.';
+            textPromptInput.select();
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+    sendPromptBtn.addEventListener('click', () => {
+      if (sendPromptBtn.classList.contains('stop-mode')) {
+        stopResponse();
+      } else {
+        sendUserInput();
+      }
+    });
+    textPromptInput.addEventListener('input', updateSendStopButton);
+    textPromptInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendUserInput();
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sendPromptBtn && sendPromptBtn.classList.contains('stop-mode')) {
+        e.preventDefault();
+        stopResponse();
+      }
+    });
+
+    async function loadAudioDevices() {
+      try {
+        let audioInputs = [];
+        if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          audioInputs = devices.filter(d => d.kind === 'audioinput');
+        } else {
+          const resp = await fetch('/api/audio_devices');
+          if (resp.ok) {
+            audioInputs = await resp.json();
+          }
+        }
+        deviceSelect.innerHTML = '<option value="">Default Mic</option>';
+        audioInputs.forEach((dev, idx) => {
+          const opt = document.createElement('option');
+          opt.value = dev.deviceId;
+          opt.textContent = dev.label || `Mic ${idx + 1}`;
+          deviceSelect.appendChild(opt);
+        });
+      } catch (e) {}
+    }
+
+    async function loadVoices() {
+      if (!voiceSelect) return;
+      try {
+        const resp = await fetch('/api/voices');
+        const voices = await resp.json();
+        voiceSelect.innerHTML = '';
+        voices.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v.id || v.name;
+          opt.textContent = v.style || v.name;
+          voiceSelect.appendChild(opt);
+        });
+      } catch (e) {}
+    }
+
+    if (voiceSelect) {
+      voiceSelect.addEventListener('change', () => {
+        flushAudioPlayback();
+        if (ws) {
+          ws.close();
+        }
+      });
+    }
+
+    // Live System RAM Polling (every 1.5 seconds)
+    const ramText = document.getElementById('ramText');
+    const ramBar = document.getElementById('ramBar');
+    async function updateRamMetrics() {
+      try {
+        const res = await fetch('/api/ram');
+        if (res.ok) {
+          const data = await res.json();
+          if (ramText) {
+            ramText.textContent = `${data.used_gb} / ${data.total_gb} GB (${data.percent}%)`;
+          }
+          if (ramBar) {
+            ramBar.style.width = `${Math.min(100, Math.max(0, data.percent))}%`;
+            if (data.percent > 85) {
+              ramBar.style.backgroundColor = '#ef4444';
+            } else if (data.percent > 65) {
+              ramBar.style.backgroundColor = '#f59e0b';
+            } else {
+              ramBar.style.backgroundColor = '#10b981';
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    setInterval(updateRamMetrics, 1500);
+    updateRamMetrics();
+
+    loadUserProfile();
+    loadVoices();
+    loadAudioDevices();
+    connectWs();
+  </script>
+  <!-- First-Launch Graphical Model Setup Overlay (Apple HIG Glass) -->
+  <div class="aries-setup-overlay" id="ariesSetupOverlay">
+    <div class="aries-setup-card">
+      <div class="aries-setup-hero">
+        <canvas id="ariesOrbitalCanvas" width="96" height="96"></canvas>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;">ARIES Public Preview Beta</div>
+          <div style="font-size:13px;color:#9ba3b4;margin-top:4px;">
+            100% On-Device Apple Silicon Metal Stack · Apache 2.0, MIT &amp; CC-BY-4.0
+          </div>
+          <div class="aries-agg-bar"><div class="aries-agg-fill" id="ariesAggFill"></div></div>
+          <div id="ariesAggStats" style="font-size:11.5px;color:#9ba3b4;font-family:var(--hig-mono);">Checking local models...</div>
+        </div>
+      </div>
+
+      <div class="aries-setup-grid" id="ariesSetupGrid"></div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--hig-border);">
+        <div style="display:flex;gap:8px;align-items:center;flex:1;min-width:260px;">
+          <input id="ariesLocalModelsPath" type="text" placeholder="Optional: path to existing models/ folder"
+                 style="flex:1;padding:7px 10px;border-radius:9px;border:1px solid var(--hig-border);background:rgba(0,0,0,0.3);color:#f5f7fa;font-size:12px;">
+          <button class="hig-btn" onclick="linkLocalModelsFolder()">Link Local</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="hig-btn" onclick="cancelAriesModelDownload()">Cancel</button>
+          <button class="hig-btn" onclick="closeAriesSetup()">Continue to App</button>
+          <button class="hig-btn hig-btn-primary" onclick="startAriesModelDownload()">Download All Models</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side-by-Side Live Preview Canvas Drawer -->
+  <div class="aries-canvas-drawer" id="ariesCanvasDrawer">
+    <div class="aries-canvas-head">
+      <span id="ariesCanvasTitle" style="font-size:13px;font-weight:600;">Live Preview</span>
+      <button class="hig-mini-btn" onclick="closeAriesCanvas()">Close</button>
+    </div>
+    <iframe id="ariesCanvasFrame" class="aries-canvas-frame" sandbox="allow-scripts"></iframe>
+  </div>
+
+  <!-- Fullscreen Image Lightbox -->
+  <div class="aries-lightbox" id="ariesLightbox" onclick="closeAriesLightbox()">
+    <img id="ariesLightboxImg" src="" alt="Preview">
+  </div>
+</body>
+</html>
