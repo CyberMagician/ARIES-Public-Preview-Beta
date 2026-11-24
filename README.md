@@ -12,14 +12,11 @@ A lightweight, 100% on-device Apple Silicon AI assistant built around a single e
 - **Rich UI**: Offline Mermaid.js diagrams, KaTeX LaTeX math, Highlight.js code blocks, Side-by-Side Live Preview Canvas, Sandboxed Code Runner, and First-Launch Graphical Model Auto-Downloader.
 
 ## Quick Start
-Requires Python 3.10–3.12 (standard macOS/python.org/Homebrew Python — avoid embedded app Pythons like LM Studio's).
+First launch automatically installs a standalone Python 3.12 environment and all dependencies (no Homebrew or manual Python install required):
 
 ```bash
 git clone https://github.com/CyberMagician/ARIES-Public-Preview-Beta.git
 cd ARIES-Public-Preview-Beta
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
 ./launch.sh
 ```
 Or build the macOS `.app` bundle:
