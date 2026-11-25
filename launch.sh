@@ -21,6 +21,7 @@ if [ "$needs_setup" -eq 1 ]; then
   rm -rf "$PWD/.venv"
   uv venv --python 3.12 "$PWD/.venv"
   uv pip install --python "$PWD/.venv/bin/python" -r "$PWD/requirements.txt"
+  "$PWD/.venv/bin/python" -m nltk.downloader -q punkt punkt_tab || true
 fi
 
 lsof -ti :8776 -i :8777 -i :8778 | xargs kill -9 2>/dev/null || true

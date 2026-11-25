@@ -2001,11 +2001,52 @@
           <svg style="width: 11px; height: 11px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
           <span>About</span>
         </button>
+        <button class="console-toggle-btn" id="benchToggleBtn" title="Run Open-Source Benchmarks (gBench / Pass@1)">
+          <span>⚡ Run Benchmark</span>
+        </button>
         <button class="console-toggle-btn" id="consoleToggleBtn" title="Toggle Integrated Python Launcher Console">
           <span class="console-status-dot" id="consoleStatusDot"></span>
           <span>&gt;_ Console</span>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Integrated Benchmark Runner Drawer -->
+  <div class="history-drawer" id="benchDrawer">
+    <div class="history-header">
+      <span>RUN OPEN-SOURCE BENCHMARKS (GBENCH / PASS@1)</span>
+      <div class="console-header-actions">
+        <button class="console-mini-btn" id="btnCloseBench">Close</button>
+      </div>
+    </div>
+    <div style="padding:14px 16px; display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+      <select id="benchSuiteSelect" class="header-select" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:8px; padding:6px 10px; color:#f1f5f9; font-size:0.8rem;">
+        <option value="mmlu_pro">MMLU-Pro</option>
+        <option value="gsm8k">GSM8K</option>
+        <option value="ifeval">IFEval</option>
+        <option value="mmlu_redux">MMLU-Redux</option>
+        <option value="chartqa">ChartQA (Vision)</option>
+        <option value="mteb_rag">MTEB RAG Retrieval</option>
+        <option value="golden">Golden Set (16 Smoke Tests)</option>
+      </select>
+      <select id="benchLimitSelect" class="header-select" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:8px; padding:6px 10px; color:#f1f5f9; font-size:0.8rem;">
+        <option value="10">10 samples</option>
+        <option value="25" selected>25 samples</option>
+        <option value="50">50 samples</option>
+        <option value="0">Full suite</option>
+      </select>
+      <select id="benchAttemptsSelect" class="header-select" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:8px; padding:6px 10px; color:#f1f5f9; font-size:0.8rem;">
+        <option value="1" selected>Pass@1</option>
+        <option value="3">Pass@3</option>
+        <option value="5">Pass@5</option>
+      </select>
+      <label style="display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;">
+        <input type="checkbox" id="benchThinkingChk" checked> Thinking
+      </label>
+      <button id="btnStartBench" style="background:#10b981; color:#04130f; font-weight:700; font-size:0.8rem; padding:7px 14px; border:none; border-radius:8px; cursor:pointer;">Start Benchmark</button>
+      <button id="btnStopBench" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); font-weight:600; font-size:0.8rem; padding:6px 12px; border-radius:8px; cursor:pointer;">Stop</button>
+      <span id="benchStatusText" style="font-size:0.76rem; color:#94a3b8;"></span>
     </div>
   </div>
 
@@ -2021,10 +2062,21 @@
     <div id="obsBar" style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:8px 14px; background:rgba(15,23,42,0.85); border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.74rem; font-family:'SF Mono', ui-monospace, monospace;">
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
         <span id="obsStatusBadge" style="display:inline-flex; align-items:center; gap:5px; color:#10b981; font-weight:600;">● Running</span>
-        <span id="obsEndpoint" style="color:#94a3b8;">http://127.0.0.1:8777/v1</span>
+        <span id="obsEndpoint" style="color:#94a3b8;">http://127.0.0.1:8776/v1</span>
         <span id="obsModelPill" style="background:rgba(16,185,129,0.14); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:6px;">llama-server</span>
       </div>
-      <button class="console-mini-btn" id="btnCopyCurl" title="Copy OpenAI-compatible cURL command">Copy cURL</button>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <button class="console-mini-btn" id="btnObsMode" style="background:rgba(16,185,129,0.18); color:#6ee7b7; border-color:rgba(16,185,129,0.4);">Benchmark Observer</button>
+        <button class="console-mini-btn" id="btnRawMode">Raw Logs</button>
+        <select id="obsParserSelect" class="header-select" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:2px 8px; color:#e2e8f0; font-size:0.72rem;">
+          <option value="auto">Parser: Auto</option>
+          <option value="mmlu">Parser: MMLU (A-D)</option>
+          <option value="math">Parser: Math / GSM8K</option>
+          <option value="mteb">Parser: MTEB Embeddings</option>
+        </select>
+        <button class="console-mini-btn" id="btnBenchResults" title="View Benchmark Results &amp; History">📊 Results</button>
+        <button class="console-mini-btn" id="btnCopyCurl" title="Copy OpenAI-compatible cURL command">Copy cURL</button>
+      </div>
     </div>
     <div class="console-body" id="consoleBody"></div>
   </div>
@@ -4837,6 +4889,20 @@ All rights reserved. Redistribution and use in source and binary forms permitted
   <div class="aries-lightbox" id="ariesLightbox" onclick="closeAriesLightbox()">
     <img id="ariesLightboxImg" src="" alt="Preview">
   </div>
+
+  <!-- Centered Benchmark Results & History Modal -->
+  <div id="benchResultsModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.68); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:24px;">
+    <div style="width:100%; max-width:780px; max-height:84vh; overflow-y:auto; background:rgba(13,17,23,0.96); border:1px solid rgba(16,185,129,0.35); border-radius:16px; padding:20px 22px; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <div style="font-size:1.05rem; font-weight:700; color:#f8fafc;">Benchmark Results &amp; Trend History</div>
+          <div id="benchModalSub" style="font-size:0.75rem; color:#94a3b8;">Saved locally in benchmark_history.json</div>
+        </div>
+        <button class="console-mini-btn" id="btnCloseBenchModal">Close</button>
+      </div>
+      <div id="benchModalBody"></div>
+    </div>
+  </div>
   <script>
     (function () {
       const modelSelect = document.getElementById('modelSelect');
@@ -4906,10 +4972,120 @@ All rights reserved. Redistribution and use in source and binary forms permitted
       }
 
       let lastLogCount = 0;
+      let lastObsCount = 0;
+      let obsMode = 'observer';
+      const btnObsMode = document.getElementById('btnObsMode');
+      const btnRawMode = document.getElementById('btnRawMode');
+      const obsParserSelect = document.getElementById('obsParserSelect');
+      const btnClearConsole = document.getElementById('btnClearConsole');
+
+      function escHtml(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function parseBenchAnswer(ev, preset) {
+        const ans = ev.answer || '';
+        if (preset === 'mteb' || ev.kind === 'embeddings') return ans;
+        if (preset === 'mmlu') {
+          const m = ans.match(/\b([A-D])\b(?:\s*[\.\):]|$)/i) || ans.match(/(?:answer|choice)\s*(?:is|:)\s*\(?([A-D])\)?/i);
+          return m ? `Choice: ${m[1].toUpperCase()}` : '';
+        }
+        if (preset === 'math') {
+          const m = ans.match(/####\s*([-+]?\d[\d,\.]*)/) || ans.match(/\\boxed\{([^}]+)\}/);
+          return m ? `Result: ${m[1]}` : '';
+        }
+        return '';
+      }
+
+      function renderObserverCards(events, benchStatus) {
+        const body = document.getElementById('consoleBody');
+        if (!body) return;
+        const preset = obsParserSelect ? obsParserSelect.value : 'auto';
+        let summaryHtml = '';
+        if (benchStatus && (benchStatus.running || benchStatus.summary || events.length)) {
+          const avgTtft = events.length ? (events.reduce((a, e) => a + (e.ttft_ms || 0), 0) / events.length).toFixed(1) : '0.0';
+          const avgTps = events.length ? (events.reduce((a, e) => a + (e.tps || 0), 0) / events.length).toFixed(1) : '0.0';
+          const totTok = events.reduce((a, e) => a + (e.tokens || 0), 0);
+          const badge = benchStatus.running
+            ? '<span style="color:#fbbf24; font-weight:700;">⏳ Running...</span>'
+            : (benchStatus.exit_code === 0
+              ? '<span style="color:#10b981; font-weight:700;">✅ Complete</span>'
+              : '<span style="color:#f87171; font-weight:700;">⚠️ Finished</span>');
+          const scorePill = benchStatus.score
+            ? `<span style="background:rgba(16,185,129,0.22); color:#6ee7b7; padding:3px 10px; border-radius:6px; font-weight:800; font-size:0.82rem;">Score: ${escHtml(benchStatus.score)}</span>`
+            : '';
+          const detailsBlock = (!benchStatus.running && benchStatus.summary)
+            ? `<details open style="margin-top:8px;"><summary style="cursor:pointer; color:#94a3b8; font-size:0.74rem; font-weight:600;">Final gBench Results Report</summary><pre style="margin:6px 0 0 0; padding:8px 10px; background:rgba(0,0,0,0.45); border-radius:8px; color:#cbd5e1; font-size:0.7rem; overflow-x:auto; white-space:pre;">${escHtml(benchStatus.summary)}</pre></details>`
+            : '';
+          summaryHtml = `<div style="background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(15,23,42,0.85)); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:12px 14px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-size:0.78rem;">
+              <strong style="color:#f8fafc;">${escHtml((benchStatus.suite || 'Benchmark').toUpperCase())}</strong>
+              ${badge}
+              ${scorePill}
+              <span style="color:#94a3b8; font-family:'SF Mono',ui-monospace,monospace;">${events.length} Qs · Avg TTFT ${avgTtft}ms · Avg ${avgTps} tok/s · ${totTok} tok</span>
+            </div>
+            ${detailsBlock}
+          </div>`;
+        }
+        if (!events.length && !summaryHtml) {
+          body.innerHTML = `<div style="color:#94a3b8; font-size:0.78rem; padding:12px;">Benchmark Observer ready. Point any benchmark (gBench, MTEB, etc.) at <code style="color:#6ee7b7;">http://127.0.0.1:8776/v1</code> to see live Question, Thinking, Answer, TTFT, and TPS cards here.</div>`;
+          return;
+        }
+        body.innerHTML = summaryHtml + events.map(ev => {
+          const badge = parseBenchAnswer(ev, preset);
+          const thinkingBlock = ev.thinking
+            ? `<details style="margin-top:6px;"><summary style="cursor:pointer; color:#94a3b8; font-size:0.72rem;">Thinking (${ev.thinking.length} chars)</summary><div style="margin-top:4px; padding:6px 8px; background:rgba(0,0,0,0.35); border-radius:6px; color:#94a3b8; font-size:0.72rem; white-space:pre-wrap;">${escHtml(ev.thinking.slice(0, 1200))}</div></details>`
+            : '';
+          return `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:10px 12px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:8px; font-size:0.74rem;">
+              <span style="font-weight:700; color:#f8fafc;">Question ${ev.seq} <span style="color:#64748b; font-weight:500;">· ${escHtml(ev.model)} · ${ev.timestamp}</span></span>
+              <div style="display:flex; gap:10px; align-items:center; font-family:'SF Mono',ui-monospace,monospace;">
+                ${badge ? `<span style="background:rgba(16,185,129,0.2); color:#6ee7b7; padding:2px 7px; border-radius:5px; font-weight:700;">${escHtml(badge)}</span>` : ''}
+                <span style="color:#7dd3fc;">TTFT ${ev.ttft_ms}ms</span>
+                <span style="color:#34d399; font-weight:600;">${ev.tps} tok/s</span>
+                <span style="color:#94a3b8;">${ev.tokens} tok</span>
+              </div>
+            </div>
+            <div style="color:#cbd5e1; font-size:0.78rem; line-height:1.45; white-space:pre-wrap; margin-bottom:6px;"><strong style="color:#94a3b8;">Prompt:</strong> ${escHtml((ev.prompt || '').slice(0, 1800))}</div>
+            <div style="color:#f1f5f9; font-size:0.78rem; white-space:pre-wrap;"><strong style="color:#10b981;">Answer:</strong> ${escHtml((ev.answer || '').slice(0, 800))}</div>
+            ${thinkingBlock}
+          </div>`;
+        }).join('');
+        body.scrollTop = body.scrollHeight;
+      }
+
+      if (btnObsMode && btnRawMode) {
+        btnObsMode.addEventListener('click', () => {
+          obsMode = 'observer';
+          btnObsMode.style.background = 'rgba(16,185,129,0.18)'; btnObsMode.style.color = '#6ee7b7';
+          btnRawMode.style.background = ''; btnRawMode.style.color = '';
+          lastObsCount = -1;
+          pollBackendObs();
+        });
+        btnRawMode.addEventListener('click', () => {
+          obsMode = 'raw';
+          btnRawMode.style.background = 'rgba(16,185,129,0.18)'; btnRawMode.style.color = '#6ee7b7';
+          btnObsMode.style.background = ''; btnObsMode.style.color = '';
+          lastLogCount = -1;
+          pollBackendObs();
+        });
+      }
+      if (obsParserSelect) {
+        obsParserSelect.addEventListener('change', () => { lastObsCount = -1; pollBackendObs(); });
+      }
+      if (btnClearConsole) {
+        btnClearConsole.addEventListener('click', async () => {
+          if (obsMode === 'observer') {
+            await fetch('/api/observer/clear', { method: 'POST' }).catch(() => {});
+            lastObsCount = -1;
+            pollBackendObs();
+          }
+        });
+      }
 
       async function pollBackendObs() {
         const drawer = document.getElementById('consoleDrawer');
-        if (!drawer || !drawer.classList.contains('open')) return;
+        if ((!drawer || !drawer.classList.contains('open')) && !window._wasBenchRunning) return;
         try {
           const res = await fetch('/api/backend-logs');
           const data = await res.json();
@@ -4920,25 +5096,152 @@ All rights reserved. Redistribution and use in source and binary forms permitted
           if (obsModelPill && data.active_model) {
             obsModelPill.textContent = `${data.active_engine} · ${data.active_model.split('/').pop()}`;
           }
-          const body = document.getElementById('consoleBody');
-          const logs = data.logs || [];
-          if (body && logs.length !== lastLogCount) {
-            lastLogCount = logs.length;
-            body.innerHTML = logs.map(line => {
-              let color = '#cbd5e1';
-              if (line.includes('[ERROR]')) color = '#f87171';
-              else if (line.includes('[MLX]')) color = '#7dd3fc';
-              else if (line.includes('[LLAMA-SERVER]')) color = '#6ee7b7';
-              const esc = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-              return `<div style="color:${color}; font-family:'SF Mono',ui-monospace,monospace; font-size:0.74rem; line-height:1.45; white-space:pre-wrap; word-break:break-word;">${esc}</div>`;
-            }).join('');
-            body.scrollTop = body.scrollHeight;
+          if (obsMode === 'observer') {
+            const [evRes, stRes] = await Promise.all([
+              fetch('/api/observer/events'),
+              fetch('/api/benchmark/status'),
+            ]);
+            const evData = await evRes.json();
+            const stData = await stRes.json();
+            const events = evData.events || [];
+            const stateKey = `${events.length}:${stData.running}:${stData.exit_code}:${stData.score || ''}`;
+            if (stateKey !== lastObsCount) {
+              lastObsCount = stateKey;
+              renderObserverCards(events, stData);
+            }
+            if (window._wasBenchRunning && !stData.running) {
+              openBenchResultsModal();
+            }
+            window._wasBenchRunning = !!stData.running;
+          } else {
+            const body = document.getElementById('consoleBody');
+            const logs = (data.logs || []).filter(l => !l.includes('Decode progress:'));
+            if (body && logs.length !== lastLogCount) {
+              lastLogCount = logs.length;
+              body.innerHTML = logs.map(line => {
+                let color = '#cbd5e1';
+                if (line.includes('[ERROR]')) color = '#f87171';
+                else if (line.includes('[MLX]')) color = '#7dd3fc';
+                else if (line.includes('[LLAMA-SERVER]')) color = '#6ee7b7';
+                return `<div style="color:${color}; font-family:'SF Mono',ui-monospace,monospace; font-size:0.74rem; line-height:1.45; white-space:pre-wrap; word-break:break-word;">${escHtml(line)}</div>`;
+              }).join('');
+              body.scrollTop = body.scrollHeight;
+            }
           }
         } catch (_) {}
       }
 
       loadLocalModels();
-      setInterval(pollBackendObs, 2500);
+      setInterval(pollBackendObs, 1000);
+
+      const benchToggleBtn = document.getElementById('benchToggleBtn');
+      const benchDrawer = document.getElementById('benchDrawer');
+      const btnCloseBench = document.getElementById('btnCloseBench');
+      const btnStartBench = document.getElementById('btnStartBench');
+      const btnStopBench = document.getElementById('btnStopBench');
+      const benchStatusText = document.getElementById('benchStatusText');
+
+      if (benchToggleBtn && benchDrawer) {
+        benchToggleBtn.addEventListener('click', () => {
+          const willOpen = !benchDrawer.classList.contains('open');
+          benchDrawer.classList.toggle('open', willOpen);
+        });
+      }
+      if (btnCloseBench && benchDrawer) {
+        btnCloseBench.addEventListener('click', () => benchDrawer.classList.remove('open'));
+      }
+      if (btnStartBench) {
+        btnStartBench.addEventListener('click', async () => {
+          const suite = document.getElementById('benchSuiteSelect').value;
+          const limit = parseInt(document.getElementById('benchLimitSelect').value, 10);
+          const attempts = parseInt(document.getElementById('benchAttemptsSelect').value, 10);
+          const thinking = document.getElementById('benchThinkingChk').checked;
+          await fetch('/api/observer/clear', { method: 'POST' }).catch(() => {});
+          const res = await fetch('/api/benchmark/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ suite, limit, attempts, thinking }),
+          });
+          const data = await res.json();
+          if (benchStatusText) benchStatusText.textContent = data.ok ? `Running ${suite}...` : (data.error || 'Error');
+          if (data.ok) {
+            window._wasBenchRunning = true;
+            if (benchDrawer) benchDrawer.classList.remove('open');
+            const cd = document.getElementById('consoleDrawer');
+            if (cd) cd.classList.add('open');
+            if (btnObsMode) btnObsMode.click();
+          }
+        });
+      }
+      if (btnStopBench) {
+        btnStopBench.addEventListener('click', async () => {
+          await fetch('/api/benchmark/stop', { method: 'POST' }).catch(() => {});
+          if (benchStatusText) benchStatusText.textContent = 'Stopped.';
+        });
+      }
+
+      const benchModal = document.getElementById('benchResultsModal');
+      const benchModalBody = document.getElementById('benchModalBody');
+      const btnCloseBenchModal = document.getElementById('btnCloseBenchModal');
+      const btnBenchResults = document.getElementById('btnBenchResults');
+
+      async function openBenchResultsModal(selectedSuite) {
+        if (!benchModal || !benchModalBody) return;
+        benchModal.style.display = 'flex';
+        try {
+          const res = await fetch('/api/benchmark/history');
+          const data = await res.json();
+          const allRuns = data.runs || [];
+          if (!allRuns.length) {
+            benchModalBody.innerHTML = '<div style="color:#94a3b8; font-size:0.82rem;">No completed benchmark runs saved yet.</div>';
+            return;
+          }
+          const suites = [...new Set(allRuns.map(r => r.suite))];
+          const activeSuite = (selectedSuite && suites.includes(selectedSuite)) ? selectedSuite : suites[0];
+          const runs = allRuns.filter(r => r.suite === activeSuite);
+          const latest = runs[0];
+          const tabs = suites.map(s => {
+            const active = s === activeSuite;
+            return `<button class="console-mini-btn" data-suite="${escHtml(s)}" style="${active ? 'background:rgba(16,185,129,0.22); color:#6ee7b7; border-color:rgba(16,185,129,0.45); font-weight:700;' : ''}">${escHtml(s.toUpperCase())}</button>`;
+          }).join('');
+          const rows = runs.slice(0, 20).map(r => `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+              <td style="padding:6px 8px; color:#94a3b8;">${escHtml(r.timestamp)}</td>
+              <td style="padding:6px 8px; color:#cbd5e1;">${escHtml(r.model)}</td>
+              <td style="padding:6px 8px; color:#e2e8f0;">${r.questions || 0} Qs</td>
+              <td style="padding:6px 8px; color:#6ee7b7; font-weight:700;">${escHtml(r.score || '-')}</td>
+              <td style="padding:6px 8px; color:#7dd3fc;">${r.avg_ttft_ms}ms</td>
+              <td style="padding:6px 8px; color:#34d399;">${r.avg_tps} tok/s</td>
+            </tr>`).join('');
+          benchModalBody.innerHTML = `
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">${tabs}</div>
+            <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:12px;">
+              <div><div style="font-size:0.7rem; color:#94a3b8;">SUITE</div><div style="font-size:0.95rem; font-weight:700; color:#f8fafc;">${escHtml(latest.suite.toUpperCase())}</div></div>
+              <div><div style="font-size:0.7rem; color:#94a3b8;">SAMPLES</div><div style="font-size:0.95rem; font-weight:700; color:#e2e8f0;">${latest.questions || 0} Qs</div></div>
+              <div><div style="font-size:0.7rem; color:#94a3b8;">SCORE</div><div style="font-size:0.95rem; font-weight:800; color:#6ee7b7;">${escHtml(latest.score || 'Done')}</div></div>
+              <div><div style="font-size:0.7rem; color:#94a3b8;">AVG TTFT</div><div style="font-size:0.95rem; font-weight:700; color:#7dd3fc;">${latest.avg_ttft_ms}ms</div></div>
+              <div><div style="font-size:0.7rem; color:#94a3b8;">AVG SPEED</div><div style="font-size:0.95rem; font-weight:700; color:#34d399;">${latest.avg_tps} tok/s</div></div>
+            </div>
+            <div style="font-size:0.74rem; font-weight:700; color:#94a3b8; margin-bottom:6px;">${escHtml(activeSuite.toUpperCase())} HISTORY (VARIANCE &amp; PROGRESS OVER TIME)</div>
+            <div style="overflow-x:auto; margin-bottom:12px;">
+              <table style="width:100%; border-collapse:collapse; font-size:0.75rem; font-family:'SF Mono',ui-monospace,monospace;">
+                <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.12); color:#64748b; text-align:left;">
+                  <th style="padding:6px 8px;">Time</th><th style="padding:6px 8px;">Model</th><th style="padding:6px 8px;">Samples</th><th style="padding:6px 8px;">Score</th><th style="padding:6px 8px;">TTFT</th><th style="padding:6px 8px;">Speed</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+            ${latest.summary ? `<details><summary style="cursor:pointer; color:#94a3b8; font-size:0.75rem; font-weight:600;">Full Latest Report</summary><pre style="margin-top:8px; padding:10px; background:rgba(0,0,0,0.45); border-radius:8px; color:#cbd5e1; font-size:0.7rem; overflow-x:auto; white-space:pre;">${escHtml(latest.summary)}</pre></details>` : ''}
+          `;
+          benchModalBody.querySelectorAll('button[data-suite]').forEach(btn => {
+            btn.addEventListener('click', () => openBenchResultsModal(btn.getAttribute('data-suite')));
+          });
+        } catch (_) {}
+      }
+
+      if (btnCloseBenchModal && benchModal) btnCloseBenchModal.addEventListener('click', () => { benchModal.style.display = 'none'; });
+      if (benchModal) benchModal.addEventListener('click', (e) => { if (e.target === benchModal) benchModal.style.display = 'none'; });
+      if (btnBenchResults) btnBenchResults.addEventListener('click', openBenchResultsModal);
     })();
   </script>
 </body>

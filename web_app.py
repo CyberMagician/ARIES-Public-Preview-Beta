@@ -681,6 +681,214 @@ async def handle_backend_logs(request):
     })
 
 
+_BENCH_PROC = None
+_BENCH_STATE = {"running": False, "suite": "", "exit_code": None, "summary": ""}
+
+
+def _find_gbench_bin() -> str | None:
+    import shutil
+    venv_bin = os.path.join(os.path.dirname(sys.executable), "gbench")
+    if os.path.isfile(venv_bin):
+        return venv_bin
+    return shutil.which("gbench")
+
+
+async def handle_benchmark_start(request):
+    global _BENCH_PROC, _BENCH_STATE
+    if _BENCH_PROC and _BENCH_PROC.poll() is None:
+        return web.json_response({"ok": False, "error": "A benchmark is already running."}, status=409)
+    data = await request.json()
+    suite = (data.get("suite") or "mmlu_redux").strip()
+    limit = int(data.get("limit", 25))
+    thinking = bool(data.get("thinking", True))
+    attempts = int(data.get("attempts", 1))
+
+    if suite == "mteb_rag":
+        _BENCH_STATE = {"running": True, "suite": "mteb_rag", "exit_code": None, "score": "", "summary": "Running MTEB RAG Retrieval..."}
+
+        def _run_mteb_rag():
+            global _BENCH_STATE
+            import math
+            from local_api_bridge import OBSERVER_EVENTS, _next_seq
+            pairs = [
+                ("How does Apple Silicon unified memory speed up local LLM inference?", "Apple Silicon unified memory allows the CPU and GPU to share the same physical RAM pool without PCIe copies."),
+                ("What is speculative decoding with Multi-Token Prediction heads?", "MTP speculative decoding drafts multiple future tokens in parallel and verifies them in one forward pass."),
+                ("How do you prevent SQLite database locked errors in Python?", "Enable WAL journal mode and set a busy_timeout pragma on each SQLite connection."),
+                ("What causes a 502 Bad Gateway in an nginx reverse proxy?", "Nginx returns 502 when the upstream application server refuses connections or crashes mid-request."),
+                ("How does Matryoshka Representation Learning shrink embedding size?", "MRL trains embeddings so the first 256 dimensions retain most semantic retrieval accuracy."),
+                ("What is the difference between Recall@1 and MRR in RAG evaluation?", "Recall@1 measures exact top-1 hits while Mean Reciprocal Rank averages 1/rank of the first relevant passage."),
+                ("Why does cosine similarity normalize vector magnitude?", "Dividing by L2 norms ensures document length does not bias semantic similarity scores."),
+                ("How do you sign a macOS app bundle ad-hoc for local testing?", "Run codesign --force --deep --sign - on the .app bundle after clearing extended attributes."),
+                ("What is the role of an mmproj file in llama.cpp?", "The mmproj GGUF holds the vision encoder weights that project image patches into LLM token space."),
+                ("How does Voice Activity Detection reduce ASR latency?", "VAD trims silence frames before audio reaches the speech-to-text transducer."),
+                ("Why use Temperature 1.0 with Gemma 4 thinking models?", "Gemma 4 IT is post-trained with T=1.0, top_p=0.95, and top_k=64 to avoid reasoning loops."),
+                ("How does Colima run Linux containers on macOS?", "Colima provisions a lightweight Lima Linux VM and exposes a Docker-compatible socket."),
+            ]
+            passages = [p for _, p in pairs]
+            try:
+                import numpy as np
+                if not memory_store.embedder.is_healthy():
+                    memory_store.embedder.start()
+                t_p0 = time.perf_counter()
+                p_vecs = memory_store.embedder.embed_documents([(None, p) for p in passages])
+                r1, mrr_sum, ndcg_sum = 0, 0.0, 0.0
+                for idx, (q, _) in enumerate(pairs):
+                    t0 = time.perf_counter()
+                    qv = memory_store.embedder.embed_query(q)
+                    ms = round((time.perf_counter() - t0) * 1000.0, 1)
+                    scored = sorted(
+                        ((float(np.dot(qv, pv)), j) for j, pv in enumerate(p_vecs) if pv is not None and qv is not None),
+                        reverse=True,
+                    )
+                    rank = next((r + 1 for r, (_, j) in enumerate(scored) if j == idx), len(passages))
+                    if rank == 1:
+                        r1 += 1
+                    mrr_sum += 1.0 / rank
+                    if rank <= 5:
+                        ndcg_sum += 1.0 / math.log2(rank + 1)
+                    top_score = round(scored[0][0], 4) if scored else 0.0
+                    OBSERVER_EVENTS.append({
+                        "seq": _next_seq(),
+                        "kind": "embeddings",
+                        "model": "EmbeddingGemma-2-270M",
+                        "prompt": q,
+                        "thinking": "",
+                        "answer": f"Rank #{rank} (Top-1 cosine={top_score})",
+                        "tokens": 1,
+                        "ttft_ms": ms,
+                        "duration_ms": ms,
+                        "tps": round(1000.0 / max(1.0, ms), 1),
+                        "timestamp": time.strftime("%H:%M:%S"),
+                    })
+                n = len(pairs)
+                score_str = f"R@1 {round(100*r1/n,1)}% · MRR {mrr_sum/n:.3f}"
+                summary = f"MTEB RAG Retrieval (EmbeddingGemma 2)\nQueries: {n} | Passages: {len(passages)}\nRecall@1: {r1}/{n} ({100*r1/n:.1f}%)\nMRR: {mrr_sum/n:.3f}\nnDCG@5: {ndcg_sum/n:.3f}\nTotal time: {time.perf_counter()-t_p0:.2f}s"
+                evs = list(OBSERVER_EVENTS)
+                avg_ms = round(sum(e.get("ttft_ms", 0) for e in evs) / max(1, len(evs)), 1)
+                avg_tps = round(sum(e.get("tps", 0) for e in evs) / max(1, len(evs)), 1)
+                hist_path = os.path.join(ARIES_DATA_DIR, "benchmark_history.json")
+                try:
+                    hist = json.load(open(hist_path, "r", encoding="utf-8")) if os.path.isfile(hist_path) else []
+                except Exception:
+                    hist = []
+                hist.insert(0, {
+                    "id": int(time.time()), "timestamp": time.strftime("%Y-%m-%d %H:%M"),
+                    "suite": "mteb_rag", "model": "EmbeddingGemma-2-270M", "engine": "llama-server",
+                    "score": score_str, "questions": n, "avg_ttft_ms": avg_ms, "avg_tps": avg_tps,
+                    "thinking": False, "attempts": 1, "summary": summary,
+                })
+                with open(hist_path, "w", encoding="utf-8") as hf:
+                    json.dump(hist[:100], hf, indent=2)
+                _BENCH_STATE = {"running": False, "suite": "mteb_rag", "exit_code": 0, "score": score_str, "summary": summary}
+            except Exception as exc:
+                _BENCH_STATE = {"running": False, "suite": "mteb_rag", "exit_code": 1, "score": "ERR", "summary": str(exc)}
+
+        threading.Thread(target=_run_mteb_rag, daemon=True).start()
+        return web.json_response({"ok": True, "suite": "mteb_rag"})
+
+    gbench_bin = _find_gbench_bin()
+    if not gbench_bin:
+        return web.json_response({"ok": False, "error": "gbench CLI not found."}, status=404)
+    active_model = llama_manager.active_model_id or "default"
+    tok = "google/gemma-4-26B-A4B-it" if "26b" in active_model.lower() else "google/gemma-4-E2B-it"
+
+    cmd = [
+        gbench_bin,
+        "--remote-endpoint", f"http://127.0.0.1:{DEFAULT_PORT}/v1",
+        "--models", active_model,
+        "--tokenizer", tok,
+    ]
+    if suite == "golden":
+        cmd.append("--golden-only")
+    else:
+        cmd.extend(["--evals-only", "--evals", suite, "--max-output-tokens", "4096", "--temperature", "1.0", "--attempt-count", str(attempts)])
+        if limit > 0:
+            cmd.extend(["--eval-limit", str(limit)])
+        if thinking:
+            cmd.append("--eval-thinking")
+
+    env = os.environ.copy()
+    env["GBENCH_SANDBOX"] = "none"
+    env["PATH"] = f"/opt/homebrew/bin:{env.get('PATH', '')}"
+    _BENCH_STATE = {"running": True, "suite": suite, "exit_code": None, "summary": f"Running {suite}..."}
+    _BENCH_PROC = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+
+    def _watch_bench():
+        global _BENCH_STATE
+        lines = []
+        if _BENCH_PROC and _BENCH_PROC.stdout:
+            for ln in _BENCH_PROC.stdout:
+                s = ln.rstrip("\n")
+                if s.strip():
+                    lines.append(s)
+                    llama_manager._log_backend("BENCH", s.strip())
+        rc = _BENCH_PROC.wait() if _BENCH_PROC else -1
+        tail = "\n".join(lines[-35:])
+        score = ""
+        import re
+        for ln in reversed(lines):
+            if "Accuracy:" in ln:
+                score = ln.split("Accuracy:", 1)[-1].strip()
+                break
+            m = re.search(r"\b(\d+/\d+)\s+(?:PASS|FAIL)\b", ln)
+            if m and not score:
+                score = m.group(1)
+        from local_api_bridge import OBSERVER_EVENTS
+        evs = list(OBSERVER_EVENTS)
+        q_count = len(evs)
+        avg_ttft = round(sum(e.get("ttft_ms", 0) for e in evs) / q_count, 1) if q_count else 0.0
+        avg_tps = round(sum(e.get("tps", 0) for e in evs) / q_count, 1) if q_count else 0.0
+        run_rec = {
+            "id": int(time.time()),
+            "timestamp": time.strftime("%Y-%m-%d %H:%M"),
+            "suite": suite,
+            "model": os.path.basename(active_model),
+            "engine": llama_manager.active_engine,
+            "score": score,
+            "questions": q_count,
+            "avg_ttft_ms": avg_ttft,
+            "avg_tps": avg_tps,
+            "thinking": thinking,
+            "attempts": attempts,
+            "summary": tail,
+        }
+        if q_count > 0 or score:
+            hist_path = os.path.join(ARIES_DATA_DIR, "benchmark_history.json")
+            try:
+                hist = json.load(open(hist_path, "r", encoding="utf-8")) if os.path.isfile(hist_path) else []
+            except Exception:
+                hist = []
+            hist.insert(0, run_rec)
+            with open(hist_path, "w", encoding="utf-8") as hf:
+                json.dump(hist[:100], hf, indent=2)
+        _BENCH_STATE = {"running": False, "suite": suite, "exit_code": rc, "score": score, "summary": tail}
+
+    threading.Thread(target=_watch_bench, daemon=True).start()
+    return web.json_response({"ok": True, "suite": suite})
+
+
+async def handle_benchmark_stop(request):
+    global _BENCH_PROC, _BENCH_STATE
+    if _BENCH_PROC and _BENCH_PROC.poll() is None:
+        _BENCH_PROC.terminate()
+        _BENCH_STATE["running"] = False
+        _BENCH_STATE["summary"] = "Stopped by user."
+    return web.json_response({"ok": True})
+
+
+async def handle_benchmark_status(request):
+    return web.json_response(_BENCH_STATE)
+
+
+async def handle_benchmark_history(request):
+    hist_path = os.path.join(ARIES_DATA_DIR, "benchmark_history.json")
+    try:
+        runs = json.load(open(hist_path, "r", encoding="utf-8")) if os.path.isfile(hist_path) else []
+    except Exception:
+        runs = []
+    return web.json_response({"runs": runs})
+
+
 def get_system_ram_metrics():
     """Reads system physical memory metrics."""
     if sys.platform != "win32":
@@ -1647,7 +1855,14 @@ async def start_web_server():
     from efficiency_engine import instinct_store
     from document_ingestion import doc_ingestor
     from web_and_tools import SandboxedCodeRunner, gatekeeper
-    from local_api_bridge import handle_v1_chat_completions, handle_v1_messages, handle_v1_models
+    from local_api_bridge import (
+        handle_observer_clear,
+        handle_observer_events,
+        handle_v1_chat_completions,
+        handle_v1_embeddings,
+        handle_v1_messages,
+        handle_v1_models,
+    )
 
     download_mgr = ModelDownloadManager()
 
@@ -1736,6 +1951,10 @@ async def start_web_server():
     app.router.add_get("/api/local-models", handle_local_models)
     app.router.add_post("/api/models/select", handle_select_model)
     app.router.add_get("/api/backend-logs", handle_backend_logs)
+    app.router.add_post("/api/benchmark/start", handle_benchmark_start)
+    app.router.add_post("/api/benchmark/stop", handle_benchmark_stop)
+    app.router.add_get("/api/benchmark/status", handle_benchmark_status)
+    app.router.add_get("/api/benchmark/history", handle_benchmark_history)
     app.router.add_get("/api/ram", handle_ram_status)
     app.router.add_get("/api/audio_devices", handle_audio_devices)
     app.router.add_get("/api/screenshot", handle_screenshot)
@@ -1771,6 +1990,9 @@ async def start_web_server():
     app.router.add_post("/api/sandbox/run", handle_sandbox_run)
     app.router.add_get("/api/lan-info", handle_lan_info)
     app.router.add_get("/v1/models", handle_v1_models)
+    app.router.add_post("/v1/embeddings", handle_v1_embeddings)
+    app.router.add_get("/api/observer/events", handle_observer_events)
+    app.router.add_post("/api/observer/clear", handle_observer_clear)
     app.router.add_post("/v1/chat/completions", handle_v1_chat_completions)
     app.router.add_post("/v1/messages", handle_v1_messages)
     app.router.add_get("/ws", websocket_handler)
