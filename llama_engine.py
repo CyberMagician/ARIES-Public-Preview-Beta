@@ -285,6 +285,11 @@ class VulkanLlamaServerManager:
                     "--host", "127.0.0.1",
                     "--port", str(self.port),
                 ]
+                if "26b-a4b" in os.path.basename(model_path).lower():
+                    from config import ARIES_DATA_DIR
+                    draft_dir = os.path.join(ARIES_DATA_DIR, "models", "mlx-drafts", "gemma-4-26B-A4B-it-qat-assistant-4bit")
+                    if os.path.isdir(draft_dir):
+                        cmd.extend(["--draft-model", draft_dir, "--draft-kind", "mtp"])
                 self._log_backend("INFO", f"Launching {server_mod}: {os.path.basename(model_path)} on 127.0.0.1:{self.port}")
                 print(f"[LLM] Launching {server_mod} ({os.path.basename(model_path)}) on 127.0.0.1:{self.port}...")
                 t0 = time.perf_counter()
