@@ -1080,18 +1080,27 @@ async def websocket_handler(request):
         messages = [{"role": "system", "content": sys_instruction}] if sys_instruction else []
         messages.extend(history_msgs)
         messages.append({"role": "user", "content": user_content})
-        req_data = {
-            "model": "google/gemma-4-e2b-it-qat",
-            "messages": messages,
-            "max_tokens": -1,
-            "temperature": 0.4 if has_images else sampling_temp,
-            "reasoning_effort": "none",
-            "chat_template_kwargs": {"enable_thinking": False},
-            "id_slot": 0,
-            "cache_prompt": True,
-            "timings_per_token": True,
-            "stream": True,
-        }
+        if llama_manager.active_engine == "mlx":
+            req_data = {
+                "model": llama_manager.active_model_id or "default",
+                "messages": messages,
+                "max_tokens": 2048,
+                "temperature": 0.4 if has_images else sampling_temp,
+                "stream": True,
+            }
+        else:
+            req_data = {
+                "model": "google/gemma-4-e2b-it-qat",
+                "messages": messages,
+                "max_tokens": -1,
+                "temperature": 0.4 if has_images else sampling_temp,
+                "reasoning_effort": "none",
+                "chat_template_kwargs": {"enable_thinking": False},
+                "id_slot": 0,
+                "cache_prompt": True,
+                "timings_per_token": True,
+                "stream": True,
+            }
         if include_tools:
             req_data["tools"] = tools
 
@@ -1116,7 +1125,7 @@ async def websocket_handler(request):
             t_llm_start = time.perf_counter()
             async with session.post(f"{LM_STUDIO_URL}/chat/completions", json=req_data, timeout=LLM_STREAM_TIMEOUT) as resp:
                 if resp.status != 200:
-                    err_msg = f"LM Studio error: HTTP {resp.status}"
+                    err_msg = f"ARIES Engine error: HTTP {resp.status}"
                     await ws.send_json({"type": "agent_transcript", "text": err_msg})
                     cancel_active_tts()
                     return

@@ -271,14 +271,22 @@ class VulkanLlamaServerManager:
             paths = resolve_model_paths()
             if self.active_engine == "mlx" and self.active_model_id and os.path.isdir(self.active_model_id):
                 model_path = self.active_model_id
+                is_vlm = False
+                try:
+                    with open(os.path.join(model_path, "config.json"), "r", encoding="utf-8") as cf:
+                        cfg = json.load(cf)
+                    is_vlm = "vision_config" in cfg
+                except Exception:
+                    pass
+                server_mod = "mlx_vlm.server" if is_vlm else "mlx_lm.server"
                 cmd = [
-                    sys.executable, "-m", "mlx_lm.server",
+                    sys.executable, "-m", server_mod,
                     "--model", model_path,
                     "--host", "127.0.0.1",
                     "--port", str(self.port),
                 ]
-                self._log_backend("INFO", f"Launching MLX server: {os.path.basename(model_path)} on 127.0.0.1:{self.port}")
-                print(f"[LLM] Launching MLX server ({os.path.basename(model_path)}) on 127.0.0.1:{self.port}...")
+                self._log_backend("INFO", f"Launching {server_mod}: {os.path.basename(model_path)} on 127.0.0.1:{self.port}")
+                print(f"[LLM] Launching {server_mod} ({os.path.basename(model_path)}) on 127.0.0.1:{self.port}...")
                 t0 = time.perf_counter()
                 self.process = subprocess.Popen(
                     cmd,

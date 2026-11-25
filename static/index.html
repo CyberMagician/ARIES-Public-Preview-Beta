@@ -4904,6 +4904,8 @@ All rights reserved. Redistribution and use in source and binary forms permitted
         });
       }
 
+      let lastLogCount = 0;
+
       async function pollBackendObs() {
         const drawer = document.getElementById('consoleDrawer');
         if (!drawer || !drawer.classList.contains('open')) return;
@@ -4916,6 +4918,20 @@ All rights reserved. Redistribution and use in source and binary forms permitted
           }
           if (obsModelPill && data.active_model) {
             obsModelPill.textContent = `${data.active_engine} · ${data.active_model.split('/').pop()}`;
+          }
+          const body = document.getElementById('consoleBody');
+          const logs = data.logs || [];
+          if (body && logs.length !== lastLogCount) {
+            lastLogCount = logs.length;
+            body.innerHTML = logs.map(line => {
+              let color = '#cbd5e1';
+              if (line.includes('[ERROR]')) color = '#f87171';
+              else if (line.includes('[MLX]')) color = '#7dd3fc';
+              else if (line.includes('[LLAMA-SERVER]')) color = '#6ee7b7';
+              const esc = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              return `<div style="color:${color}; font-family:'SF Mono',ui-monospace,monospace; font-size:0.74rem; line-height:1.45; white-space:pre-wrap; word-break:break-word;">${esc}</div>`;
+            }).join('');
+            body.scrollTop = body.scrollHeight;
           }
         } catch (_) {}
       }
