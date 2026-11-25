@@ -7,3 +7,4 @@ sounddevice>=0.5.0
 psutil>=6.0.0
 python-dotenv>=1.0.0
 google-genai>=1.0.0
+mlx-lm>=0.30.0; sys_platform == "darwin" and platform_machine == "arm64"

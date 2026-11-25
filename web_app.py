@@ -645,6 +645,42 @@ async def handle_models(request):
     return web.json_response(models_copy)
 
 
+async def handle_local_models(request):
+    models = llama_manager.list_available_models()
+    return web.json_response({
+        "active_model": llama_manager.active_model_id,
+        "active_engine": llama_manager.active_engine,
+        "endpoint": llama_manager.v1_url,
+        "models": models,
+    })
+
+
+async def handle_select_model(request):
+    try:
+        data = await request.json()
+        model_id = (data.get("model_id") or "").strip()
+        if not model_id:
+            return web.json_response({"ok": False, "error": "model_id required"}, status=400)
+        ok = await asyncio.to_thread(llama_manager.switch_model, model_id)
+        return web.json_response({
+            "ok": bool(ok),
+            "active_model": llama_manager.active_model_id,
+            "active_engine": llama_manager.active_engine,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_backend_logs(request):
+    return web.json_response({
+        "endpoint": llama_manager.v1_url,
+        "active_model": llama_manager.active_model_id,
+        "active_engine": llama_manager.active_engine,
+        "running": llama_manager.is_running() or await asyncio.to_thread(llama_manager.is_healthy),
+        "logs": list(llama_manager.backend_logs),
+    })
+
+
 def get_system_ram_metrics():
     """Reads system physical memory metrics."""
     if sys.platform != "win32":
@@ -1688,6 +1724,9 @@ async def start_web_server():
     app.router.add_get("/", handle_index)
     app.router.add_get("/api/voices", handle_voices)
     app.router.add_get("/api/models", handle_models)
+    app.router.add_get("/api/local-models", handle_local_models)
+    app.router.add_post("/api/models/select", handle_select_model)
+    app.router.add_get("/api/backend-logs", handle_backend_logs)
     app.router.add_get("/api/ram", handle_ram_status)
     app.router.add_get("/api/audio_devices", handle_audio_devices)
     app.router.add_get("/api/screenshot", handle_screenshot)

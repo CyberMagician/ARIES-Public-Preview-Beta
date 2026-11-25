@@ -10,6 +10,7 @@ Replaces LM Studio & Ollama completely by bundling and managing the standalone
 """
 
 import atexit
+from collections import deque
 import ctypes
 import json
 import os
@@ -108,6 +109,9 @@ class VulkanLlamaServerManager:
         self._is_active_request = False
         self._watchdog_thread: threading.Thread | None = None
         self._running_watchdog = True
+        self.backend_logs: deque[str] = deque(maxlen=300)
+        self.active_model_id: str | None = None
+        self.active_engine: str = "llama-server"
         self._start_watchdog()
         atexit.register(self.stop)
 
@@ -164,12 +168,72 @@ class VulkanLlamaServerManager:
             self.warmup_prompt_cache()
         return ok
 
+    def _log_backend(self, level: str, msg: str):
+        ts = time.strftime("%H:%M:%S")
+        self.backend_logs.append(f"[{ts}] [{level}] {msg}")
+
+    def list_available_models(self) -> list[dict]:
+        """Scans ARIES models/gemma-4 (*.gguf) and models/mlx (*) for switchable local models."""
+        from config import ARIES_MODELS_DIR
+        models: list[dict] = []
+        gguf_dir = os.path.join(ARIES_MODELS_DIR, "gemma-4")
+        if os.path.isdir(gguf_dir):
+            for fname in sorted(os.listdir(gguf_dir)):
+                low = fname.lower()
+                if low.endswith(".gguf") and not low.startswith("mmproj") and not low.startswith("mtp"):
+                    fpath = os.path.join(gguf_dir, fname)
+                    models.append({
+                        "id": fpath,
+                        "name": fname,
+                        "engine": "llama-server",
+                        "active": self.active_model_id == fpath or (self.active_model_id is None and self.active_engine == "llama-server"),
+                    })
+        mlx_dir = os.path.join(ARIES_MODELS_DIR, "mlx")
+        if os.path.isdir(mlx_dir):
+            for dname in sorted(os.listdir(mlx_dir)):
+                dpath = os.path.join(mlx_dir, dname)
+                if os.path.isdir(dpath) and os.path.exists(os.path.join(dpath, "config.json")):
+                    models.append({
+                        "id": dpath,
+                        "name": f"{dname} (MLX)",
+                        "engine": "mlx",
+                        "active": self.active_model_id == dpath,
+                    })
+        return models
+
+    def switch_model(self, model_id: str) -> bool:
+        """Stops the active backend and starts the selected GGUF (llama-server) or MLX (mlx_lm.server) model."""
+        with self._lock:
+            self._is_ready = False
+            if self.process and self.process.poll() is None:
+                self._log_backend("INFO", f"Stopping {self.active_engine} before switching to {os.path.basename(model_id)}...")
+                try:
+                    self.process.terminate()
+                    self.process.wait(timeout=4.0)
+                except Exception:
+                    try:
+                        self.process.kill()
+                    except Exception:
+                        pass
+                self.process = None
+
+            if os.path.isdir(model_id) and os.path.exists(os.path.join(model_id, "config.json")):
+                self.active_engine = "mlx"
+            else:
+                self.active_engine = "llama-server"
+            self.active_model_id = model_id
+        return self.start()
+
     def is_healthy(self, timeout: float = 0.6) -> bool:
-        try:
-            with urllib.request.urlopen(f"{self.base_url}/health", timeout=timeout) as resp:
-                return resp.status == 200
-        except Exception:
-            return False
+        endpoints = (f"{self.v1_url}/models", f"{self.base_url}/health") if self.active_engine == "mlx" else (f"{self.base_url}/health",)
+        for url in endpoints:
+            try:
+                with urllib.request.urlopen(url, timeout=timeout) as resp:
+                    if resp.status == 200:
+                        return True
+            except Exception:
+                pass
+        return False
 
     def _free_conflicting_vram_processes(self):
         """Stops leftover LM Studio / Ollama processes if they are holding Radeon Pro 570 VRAM."""
@@ -204,7 +268,43 @@ class VulkanLlamaServerManager:
                 return True
 
             paths = resolve_model_paths()
-            model_path = paths["gemma4_llm"]
+            if self.active_engine == "mlx" and self.active_model_id and os.path.isdir(self.active_model_id):
+                model_path = self.active_model_id
+                cmd = [
+                    sys.executable, "-m", "mlx_lm.server",
+                    "--model", model_path,
+                    "--host", "127.0.0.1",
+                    "--port", str(self.port),
+                ]
+                self._log_backend("INFO", f"Launching MLX server: {os.path.basename(model_path)} on 127.0.0.1:{self.port}")
+                print(f"[LLM] Launching MLX server ({os.path.basename(model_path)}) on 127.0.0.1:{self.port}...")
+                t0 = time.perf_counter()
+                self.process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    bufsize=1,
+                )
+                threading.Thread(target=self._stream_server_logs, daemon=True).start()
+                for _ in range(240):
+                    if self.process.poll() is not None:
+                        self._log_backend("ERROR", f"MLX server exited with code {self.process.returncode}")
+                        return False
+                    if self.is_healthy(timeout=0.5):
+                        self._is_ready = True
+                        boot_s = time.perf_counter() - t0
+                        self._log_backend("INFO", f"MLX model {os.path.basename(model_path)} ready in {boot_s:.2f}s")
+                        return True
+                    time.sleep(0.25)
+                self._log_backend("ERROR", "Timed out waiting for MLX server.")
+                return False
+
+            model_path = self.active_model_id if (self.active_model_id and os.path.isfile(self.active_model_id)) else paths["gemma4_llm"]
+            self.active_model_id = model_path
+            self.active_engine = "llama-server"
             mmproj_path = paths["gemma4_vision"]
             draft_path = paths["gemma4_mtp"]
 
@@ -371,6 +471,7 @@ class VulkanLlamaServerManager:
                 line = raw_line.strip()
                 if not line:
                     continue
+                self._log_backend(self.active_engine.upper(), line)
                 if "listening on http" in line:
                     print(f"[LLM] {line.split('srv')[-1].strip()}")
                 elif "common_speculative_init_result: loading draft model" in line:

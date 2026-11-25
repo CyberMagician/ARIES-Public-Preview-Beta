@@ -1972,6 +1972,12 @@
             <option value="oled">⚡ OLED Pure (Zero Power)</option>
           </select>
         </div>
+        <div class="header-select-pill" title="Active Local Model (llama-server / MLX)">
+          <svg style="width: 11px; height: 11px; fill: currentColor; opacity: 0.85; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l-10-5v6l10 5 10-5V6l-10 5zm0 6l-10-5v6l10 5 10-5v-6l-10 5z"/></svg>
+          <select class="header-select" id="modelSelect">
+            <option value="">Loading models...</option>
+          </select>
+        </div>
       </div>
       <div class="sub-toolbar-right">
         <button class="console-toggle-btn" id="newChatBtn" title="Start a fresh conversation and refresh context">
@@ -2010,6 +2016,14 @@
         <button class="console-mini-btn" id="btnCopyConsole">Copy</button>
         <button class="console-mini-btn" id="btnClearConsole">Clear</button>
       </div>
+    </div>
+    <div id="obsBar" style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:8px 14px; background:rgba(15,23,42,0.85); border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.74rem; font-family:'SF Mono', ui-monospace, monospace;">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <span id="obsStatusBadge" style="display:inline-flex; align-items:center; gap:5px; color:#10b981; font-weight:600;">● Running</span>
+        <span id="obsEndpoint" style="color:#94a3b8;">http://127.0.0.1:8777/v1</span>
+        <span id="obsModelPill" style="background:rgba(16,185,129,0.14); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:6px;">llama-server</span>
+      </div>
+      <button class="console-mini-btn" id="btnCopyCurl" title="Copy OpenAI-compatible cURL command">Copy cURL</button>
     </div>
     <div class="console-body" id="consoleBody"></div>
   </div>
@@ -4822,5 +4836,93 @@ All rights reserved. Redistribution and use in source and binary forms permitted
   <div class="aries-lightbox" id="ariesLightbox" onclick="closeAriesLightbox()">
     <img id="ariesLightboxImg" src="" alt="Preview">
   </div>
+  <script>
+    (function () {
+      const modelSelect = document.getElementById('modelSelect');
+      const obsStatus = document.getElementById('obsStatusBadge');
+      const obsEndpoint = document.getElementById('obsEndpoint');
+      const obsModelPill = document.getElementById('obsModelPill');
+      const btnCopyCurl = document.getElementById('btnCopyCurl');
+      let currentEndpoint = 'http://127.0.0.1:8777/v1';
+      let currentModel = '';
+
+      async function loadLocalModels() {
+        if (!modelSelect) return;
+        try {
+          const res = await fetch('/api/local-models');
+          const data = await res.json();
+          currentEndpoint = data.endpoint || currentEndpoint;
+          currentModel = data.active_model || '';
+          if (obsEndpoint) obsEndpoint.textContent = currentEndpoint;
+          modelSelect.innerHTML = '';
+          (data.models || []).forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = m.name;
+            if (m.active) opt.selected = true;
+            modelSelect.appendChild(opt);
+          });
+          if (obsModelPill) {
+            const label = currentModel ? currentModel.split('/').pop() : 'default';
+            obsModelPill.textContent = `${data.active_engine || 'llama-server'} · ${label}`;
+          }
+        } catch (_) {}
+      }
+
+      if (modelSelect) {
+        modelSelect.addEventListener('change', async () => {
+          const modelId = modelSelect.value;
+          if (!modelId) return;
+          if (obsStatus) { obsStatus.textContent = '● Switching...'; obsStatus.style.color = '#fbbf24'; }
+          try {
+            const res = await fetch('/api/models/select', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ model_id: modelId }),
+            });
+            const data = await res.json();
+            currentModel = data.active_model || modelId;
+            if (obsStatus) {
+              obsStatus.textContent = data.ok ? '● Running' : '● Error';
+              obsStatus.style.color = data.ok ? '#10b981' : '#ef4444';
+            }
+            if (obsModelPill) {
+              obsModelPill.textContent = `${data.active_engine || 'llama-server'} · ${currentModel.split('/').pop()}`;
+            }
+          } catch (_) {
+            if (obsStatus) { obsStatus.textContent = '● Error'; obsStatus.style.color = '#ef4444'; }
+          }
+        });
+      }
+
+      if (btnCopyCurl) {
+        btnCopyCurl.addEventListener('click', () => {
+          const cmd = `curl ${currentEndpoint}/chat/completions -H "Content-Type: application/json" -d '{"model":"${currentModel || 'default'}","messages":[{"role":"user","content":"Hello"}]}'`;
+          navigator.clipboard?.writeText(cmd);
+          btnCopyCurl.textContent = 'Copied!';
+          setTimeout(() => { btnCopyCurl.textContent = 'Copy cURL'; }, 1500);
+        });
+      }
+
+      async function pollBackendObs() {
+        const drawer = document.getElementById('consoleDrawer');
+        if (!drawer || !drawer.classList.contains('open')) return;
+        try {
+          const res = await fetch('/api/backend-logs');
+          const data = await res.json();
+          if (obsStatus) {
+            obsStatus.textContent = data.running ? '● Running' : '● Stopped';
+            obsStatus.style.color = data.running ? '#10b981' : '#94a3b8';
+          }
+          if (obsModelPill && data.active_model) {
+            obsModelPill.textContent = `${data.active_engine} · ${data.active_model.split('/').pop()}`;
+          }
+        } catch (_) {}
+      }
+
+      loadLocalModels();
+      setInterval(pollBackendObs, 2500);
+    })();
+  </script>
 </body>
 </html>
