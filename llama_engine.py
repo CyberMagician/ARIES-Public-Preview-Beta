@@ -174,7 +174,8 @@ class VulkanLlamaServerManager:
 
     def list_available_models(self) -> list[dict]:
         """Scans ARIES models/gemma-4 (*.gguf) and models/mlx (*) for switchable local models."""
-        from config import ARIES_MODELS_DIR
+        from config import ARIES_DATA_DIR
+        ARIES_MODELS_DIR = os.path.join(ARIES_DATA_DIR, "models")
         models: list[dict] = []
         gguf_dir = os.path.join(ARIES_MODELS_DIR, "gemma-4")
         if os.path.isdir(gguf_dir):
