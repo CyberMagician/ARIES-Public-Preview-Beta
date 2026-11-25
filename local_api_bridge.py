@@ -203,6 +203,8 @@ async def handle_observer_events(request: web.Request) -> web.Response:
 
 
 async def handle_observer_clear(request: web.Request) -> web.Response:
+    global _OBSERVER_SEQ
+    _OBSERVER_SEQ = 0
     OBSERVER_EVENTS.clear()
     return web.json_response({"ok": True})
 

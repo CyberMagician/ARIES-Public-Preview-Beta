@@ -833,9 +833,10 @@ async def handle_benchmark_start(request):
             if "Accuracy:" in ln:
                 score = ln.split("Accuracy:", 1)[-1].strip()
                 break
-            m = re.search(r"\b(\d+/\d+)\s+(?:PASS|FAIL)\b", ln)
-            if m and not score:
-                score = m.group(1)
+            if not ln.lstrip().startswith("-"):
+                m = re.search(r"\b(\d+/\d+)\s+(?:PASS|FAIL)\b", ln)
+                if m and not score:
+                    score = m.group(1)
         from local_api_bridge import OBSERVER_EVENTS
         evs = list(OBSERVER_EVENTS)
         q_count = len(evs)

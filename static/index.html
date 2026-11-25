@@ -449,9 +449,130 @@
     }
 
     .console-drawer.open {
-      height: 50vh;
-      max-height: 50vh;
+      height: calc(100vh - 88px);
+      max-height: calc(100vh - 88px);
       border-bottom-width: 1px;
+    }
+
+    /* Full-Screen Benchmark Observer Cards */
+    .obs-card {
+      max-width: 1100px;
+      margin: 0 auto 14px auto;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .obs-header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 10px 14px;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: 'SF Mono', ui-monospace, monospace;
+      font-size: 0.76rem;
+    }
+    .obs-question {
+      padding: 12px 16px;
+      background: rgba(59, 130, 246, 0.08);
+      border-left: 3px solid #3b82f6;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+    }
+    .obs-options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .obs-opt {
+      padding: 6px 10px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .obs-opt.selected {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.55);
+      color: #6ee7b7;
+      font-weight: 700;
+    }
+    .obs-thinking {
+      padding: 8px 16px;
+      background: rgba(245, 158, 11, 0.06);
+      border-left: 3px solid rgba(245, 158, 11, 0.55);
+      font-family: 'SF Mono', ui-monospace, monospace;
+      font-size: 12.5px;
+      color: #cbd5e1;
+    }
+    .obs-answer {
+      padding: 12px 16px;
+      background: rgba(16, 185, 129, 0.09);
+      border-left: 3px solid #10b981;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: #f8fafc;
+      white-space: pre-wrap;
+    }
+    @keyframes obs-spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes obs-shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+    .obs-loading-card {
+      padding: 16px 20px;
+      border-radius: 14px;
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .obs-loading-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #34d399;
+    }
+    .obs-spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(16, 185, 129, 0.2);
+      border-top-color: #10b981;
+      animation: obs-spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    .obs-shimmer-bar {
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.12);
+      overflow: hidden;
+      position: relative;
+    }
+    .obs-shimmer-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 40%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, #10b981, transparent);
+      animation: obs-shimmer 1.4s ease-in-out infinite;
     }
 
     .console-header {
@@ -4985,22 +5106,68 @@ All rights reserved. Redistribution and use in source and binary forms permitted
 
       function parseBenchAnswer(ev, preset) {
         const ans = ev.answer || '';
-        if (preset === 'mteb' || ev.kind === 'embeddings') return ans;
-        if (preset === 'mmlu') {
-          const m = ans.match(/\b([A-D])\b(?:\s*[\.\):]|$)/i) || ans.match(/(?:answer|choice)\s*(?:is|:)\s*\(?([A-D])\)?/i);
+        if (preset === 'mteb' || preset === 'mteb_rag' || ev.kind === 'embeddings') return ans;
+        if (preset === 'mmlu' || preset === 'mmlu_pro' || preset === 'mmlu_redux') {
+          const m = ans.match(/the answer is\s*\(?([A-J])\)?/i) || ans.match(/\b([A-J])\b(?:\s*[\.\):]|$)/i) || ans.match(/(?:answer|choice)\s*(?:is|:)\s*\(?([A-J])\)?/i);
           return m ? `Choice: ${m[1].toUpperCase()}` : '';
         }
-        if (preset === 'math') {
-          const m = ans.match(/####\s*([-+]?\d[\d,\.]*)/) || ans.match(/\\boxed\{([^}]+)\}/);
-          return m ? `Result: ${m[1]}` : '';
+        if (preset === 'math' || preset === 'gsm8k') {
+          const m = ans.match(/####\s*([-+]?\d[\d,\.]*)/) || ans.match(/\\boxed\{([^}]+)\}/) || ans.match(/([-+]?\d[\d,\.]*)\s*$/);
+          return m ? `Answer: ${m[1]}` : '';
+        }
+        if (preset === 'ifeval') {
+          const words = ans.trim() ? ans.trim().split(/\s+/).length : 0;
+          const paras = ans.trim() ? ans.trim().split(/\n\s*\n/).length : 0;
+          return `${words}w · ${paras}p`;
         }
         return '';
+      }
+
+      function formatQuestionBlock(rawPrompt, suite, selectedChoice) {
+        const p = String(rawPrompt || '');
+        if (suite === 'mmlu_pro' || suite === 'mmlu_redux' || p.includes('Question:')) {
+          const idx = p.lastIndexOf('Question:');
+          if (idx !== -1) {
+            const prefix = p.slice(0, idx).trim();
+            const target = p.slice(idx).trim();
+            const lines = target.split('\n');
+            const optLines = [];
+            const qLines = [];
+            for (const ln of lines) {
+              if (/^\s*(?:Options:\s*)?[A-J][\.\)]\s+/.test(ln)) {
+                optLines.push(ln.replace(/^\s*Options:\s*/i, '').trim());
+              } else if (!/^\s*Options:\s*$/i.test(ln)) {
+                qLines.push(ln);
+              }
+            }
+            const prefixHtml = prefix.length > 60
+              ? `<details style="margin-bottom:8px;"><summary style="cursor:pointer; color:#93c5fd; font-size:12px;">Few-Shot Examples (${prefix.length} chars)</summary><div style="margin-top:6px; font-size:12px; color:#94a3b8; white-space:pre-wrap;">${escHtml(prefix)}</div></details>`
+              : '';
+            const optsHtml = optLines.length
+              ? `<div class="obs-options-grid">${optLines.map(o => {
+                  const letter = (o.match(/^([A-J])[\.\)]/) || [])[1];
+                  const isSel = selectedChoice && letter === selectedChoice;
+                  return `<div class="obs-opt${isSel ? ' selected' : ''}">${escHtml(o)}</div>`;
+                }).join('')}</div>`
+              : '';
+            return `${prefixHtml}<div>${escHtml(qLines.join('\n'))}</div>${optsHtml}`;
+          }
+        }
+        if (suite === 'gsm8k' && p.includes('Q:')) {
+          const idx = p.lastIndexOf('Q:');
+          return escHtml(p.slice(idx).trim());
+        }
+        if (suite === 'chartqa') {
+          return `<span style="display:inline-block; background:rgba(56,189,248,0.18); color:#7dd3fc; font-size:11.5px; font-weight:700; padding:2px 8px; border-radius:5px; margin-bottom:6px;">🖼 Chart Image</span>\n${escHtml(p.slice(0, 1800))}`;
+        }
+        return escHtml(p.slice(0, 1800));
       }
 
       function renderObserverCards(events, benchStatus) {
         const body = document.getElementById('consoleBody');
         if (!body) return;
-        const preset = obsParserSelect ? obsParserSelect.value : 'auto';
+        const rawPreset = obsParserSelect ? obsParserSelect.value : 'auto';
+        const activeSuite = rawPreset !== 'auto' ? rawPreset : ((benchStatus && benchStatus.suite) || 'auto');
         let summaryHtml = '';
         if (benchStatus && (benchStatus.running || benchStatus.summary || events.length)) {
           const avgTtft = events.length ? (events.reduce((a, e) => a + (e.ttft_ms || 0), 0) / events.length).toFixed(1) : '0.0';
@@ -5017,7 +5184,7 @@ All rights reserved. Redistribution and use in source and binary forms permitted
           const detailsBlock = (!benchStatus.running && benchStatus.summary)
             ? `<details open style="margin-top:8px;"><summary style="cursor:pointer; color:#94a3b8; font-size:0.74rem; font-weight:600;">Final gBench Results Report</summary><pre style="margin:6px 0 0 0; padding:8px 10px; background:rgba(0,0,0,0.45); border-radius:8px; color:#cbd5e1; font-size:0.7rem; overflow-x:auto; white-space:pre;">${escHtml(benchStatus.summary)}</pre></details>`
             : '';
-          summaryHtml = `<div style="background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(15,23,42,0.85)); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:12px 14px; margin-bottom:10px;">
+          summaryHtml = `<div style="max-width:1100px; margin:0 auto 14px auto; background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(15,23,42,0.85)); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:12px 16px;">
             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-size:0.78rem;">
               <strong style="color:#f8fafc;">${escHtml((benchStatus.suite || 'Benchmark').toUpperCase())}</strong>
               ${badge}
@@ -5028,29 +5195,39 @@ All rights reserved. Redistribution and use in source and binary forms permitted
           </div>`;
         }
         if (!events.length && !summaryHtml) {
-          body.innerHTML = `<div style="color:#94a3b8; font-size:0.78rem; padding:12px;">Benchmark Observer ready. Point any benchmark (gBench, MTEB, etc.) at <code style="color:#6ee7b7;">http://127.0.0.1:8776/v1</code> to see live Question, Thinking, Answer, TTFT, and TPS cards here.</div>`;
+          body.innerHTML = `<div style="color:#94a3b8; font-size:0.82rem; padding:16px; max-width:1100px; margin:0 auto;">Benchmark Observer ready. Point any benchmark (gBench, MTEB, etc.) at <code style="color:#6ee7b7;">http://127.0.0.1:8776/v1</code> to see live Question, Thinking, Answer, TTFT, and TPS cards here.</div>`;
           return;
         }
+        const loadingHtml = (benchStatus && benchStatus.running)
+          ? `<div class="obs-loading-card">
+               <div class="obs-loading-row">
+                 <div class="obs-spinner"></div>
+                 <span>Loading dataset &amp; running Question ${events.length + 1}...</span>
+               </div>
+               <div class="obs-shimmer-bar"></div>
+             </div>`
+          : '';
         body.innerHTML = summaryHtml + events.map(ev => {
-          const badge = parseBenchAnswer(ev, preset);
+          const badge = parseBenchAnswer(ev, activeSuite);
+          const selChoice = (badge.match(/^Choice:\s*([A-J])$/) || [])[1] || '';
+          const qHtml = formatQuestionBlock(ev.prompt, activeSuite, selChoice);
           const thinkingBlock = ev.thinking
-            ? `<details style="margin-top:6px;"><summary style="cursor:pointer; color:#94a3b8; font-size:0.72rem;">Thinking (${ev.thinking.length} chars)</summary><div style="margin-top:4px; padding:6px 8px; background:rgba(0,0,0,0.35); border-radius:6px; color:#94a3b8; font-size:0.72rem; white-space:pre-wrap;">${escHtml(ev.thinking.slice(0, 1200))}</div></details>`
+            ? `<div class="obs-thinking"><details><summary style="cursor:pointer; color:#fbbf24; font-weight:600;">Thinking (${ev.thinking.length} chars)</summary><div style="margin-top:6px; white-space:pre-wrap; line-height:1.45;">${escHtml(ev.thinking.slice(0, 1500))}</div></details></div>`
             : '';
-          return `<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:10px 12px; margin-bottom:8px;">
-            <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:8px; font-size:0.74rem;">
-              <span style="font-weight:700; color:#f8fafc;">Question ${ev.seq} <span style="color:#64748b; font-weight:500;">· ${escHtml(ev.model)} · ${ev.timestamp}</span></span>
-              <div style="display:flex; gap:10px; align-items:center; font-family:'SF Mono',ui-monospace,monospace;">
-                ${badge ? `<span style="background:rgba(16,185,129,0.2); color:#6ee7b7; padding:2px 7px; border-radius:5px; font-weight:700;">${escHtml(badge)}</span>` : ''}
-                <span style="color:#7dd3fc;">TTFT ${ev.ttft_ms}ms</span>
-                <span style="color:#34d399; font-weight:600;">${ev.tps} tok/s</span>
-                <span style="color:#94a3b8;">${ev.tokens} tok</span>
-              </div>
+          return `<div class="obs-card">
+            <div class="obs-header">
+              <span style="font-weight:700; color:#f8fafc;">Question ${ev.seq}</span>
+              <span style="color:#64748b;">${escHtml(ev.model)} · ${ev.timestamp}</span>
+              ${badge ? `<span style="background:rgba(16,185,129,0.22); color:#6ee7b7; padding:2px 8px; border-radius:5px; font-weight:700;">${escHtml(badge)}</span>` : ''}
+              <span style="color:#7dd3fc;">TTFT ${ev.ttft_ms}ms</span>
+              <span style="color:#34d399; font-weight:600;">${ev.tps} tok/s</span>
+              <span style="color:#94a3b8;">${ev.tokens} tok</span>
             </div>
-            <div style="color:#cbd5e1; font-size:0.78rem; line-height:1.45; white-space:pre-wrap; margin-bottom:6px;"><strong style="color:#94a3b8;">Prompt:</strong> ${escHtml((ev.prompt || '').slice(0, 1800))}</div>
-            <div style="color:#f1f5f9; font-size:0.78rem; white-space:pre-wrap;"><strong style="color:#10b981;">Answer:</strong> ${escHtml((ev.answer || '').slice(0, 800))}</div>
+            <div class="obs-question">${qHtml}</div>
             ${thinkingBlock}
+            <div class="obs-answer"><strong style="color:#10b981; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; display:block; margin-bottom:4px;">Answer</strong>${escHtml((ev.answer || '').slice(0, 1200))}</div>
           </div>`;
-        }).join('');
+        }).join('') + loadingHtml;
         body.scrollTop = body.scrollHeight;
       }
 
