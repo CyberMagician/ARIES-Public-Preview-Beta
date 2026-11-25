@@ -11,3 +11,9 @@ ARIES Public Preview Beta bundles or downloads only permissive open-weight model
 - **Mermaid.js** — MIT License
 - **KaTeX** — MIT License
 - **Highlight.js** — BSD-3-Clause License
+- **Apple MLX, `mlx-lm`, & `mlx-vlm`** — MIT License (Apple Inc. & contributors)
+- **Google DeepMind `gbench`** — Apache License 2.0
+- **Hugging Face `transformers` & `datasets`** — Apache License 2.0
+- **OpenAI `openai` Python SDK & `tiktoken`** — Apache License 2.0 / MIT License
+- **NLTK & `langdetect`** — Apache License 2.0
+- **Open-Source Benchmark Suites (`MMLU-Pro`, `MMLU-Redux`, `GSM8K`, `IFEval`, `ChartQA`, `MTEB`)** — MIT / Apache 2.0 / CC-BY-4.0 (fetched on demand under their respective upstream licenses)
