@@ -792,11 +792,14 @@ async def handle_benchmark_start(request):
     active_model = llama_manager.active_model_id or "default"
     tok = "google/gemma-4-26B-A4B-it" if "26b" in active_model.lower() else "google/gemma-4-E2B-it"
 
+    results_dir = os.path.join(ARIES_DATA_DIR, "benchmark_results")
+    os.makedirs(results_dir, exist_ok=True)
     cmd = [
         gbench_bin,
         "--remote-endpoint", f"http://127.0.0.1:{DEFAULT_PORT}/v1",
         "--models", active_model,
         "--tokenizer", tok,
+        "--results-dir", results_dir,
     ]
     if suite == "golden":
         cmd.append("--golden-only")
@@ -811,7 +814,7 @@ async def handle_benchmark_start(request):
     env["GBENCH_SANDBOX"] = "none"
     env["PATH"] = f"/opt/homebrew/bin:{env.get('PATH', '')}"
     _BENCH_STATE = {"running": True, "suite": suite, "exit_code": None, "summary": f"Running {suite}..."}
-    _BENCH_PROC = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+    _BENCH_PROC = subprocess.Popen(cmd, cwd=ARIES_DATA_DIR, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
 
     def _watch_bench():
         global _BENCH_STATE

@@ -12,6 +12,7 @@ import aiohttp
 from aiohttp import web
 
 from config import LLAMA_SERVER_URL
+from llama_engine import llama_manager
 from prompt_settings import prompt_settings
 
 OBSERVER_EVENTS: deque[dict] = deque(maxlen=200)
@@ -59,6 +60,14 @@ async def handle_v1_models(request: web.Request) -> web.Response:
 async def handle_v1_chat_completions(request: web.Request) -> web.Response:
     if not _is_allowed(request):
         return web.json_response({"error": "Local API Bridge is disabled in ARIES Settings."}, status=403)
+    llama_manager.set_active(True)
+    try:
+        return await _proxy_chat_completions(request)
+    finally:
+        llama_manager.set_active(False)
+
+
+async def _proxy_chat_completions(request: web.Request) -> web.Response:
     body = await request.json()
     seq = _next_seq()
     prompt_text = _extract_prompt_preview(body.get("messages", []))
