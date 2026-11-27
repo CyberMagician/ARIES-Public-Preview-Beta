@@ -574,6 +574,114 @@
       background: linear-gradient(90deg, transparent, #10b981, transparent);
       animation: obs-shimmer 1.4s ease-in-out infinite;
     }
+    .swarm-board {
+      margin: 12px 0;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(10, 15, 24, 0.92);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .swarm-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .swarm-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .swarm-badge {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .swarm-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 1050px) {
+      .swarm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .swarm-card {
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 3px solid var(--advisor-color, #10b981);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 130px;
+    }
+    .swarm-card-head {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .swarm-card-body {
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+    }
+    .swarm-verdict {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.09);
+      border-left: 3px solid #10b981;
+      color: #f8fafc;
+      font-size: 13.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .mode-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .mode-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+    }
+    .mode-toggle-btn.active-think {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: rgba(245, 158, 11, 0.55);
+      color: #fbbf24;
+    }
+    .mode-toggle-btn.active-swarm {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.55);
+      color: #34d399;
+    }
 
     .console-header {
       display: flex;
@@ -2602,6 +2710,12 @@ All rights reserved. Redistribution and use in source and binary forms permitted
         <button class="attach-btn" id="screenBtn" type="button" title="Share Screen / Snapshot">
           <svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 2v1h12v-1l-1-2h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z"/></svg>
         </button>
+        <button class="mode-toggle-btn" id="thinkingToggleBtn" type="button" title="Toggle Gemma 4 Thinking Mode">🧠 Think</button>
+        <button class="mode-toggle-btn" id="swarmToggleBtn" type="button" title="Toggle Project Swarm (8× E2B)">🐝 Swarm</button>
+        <select class="mode-toggle-btn" id="swarmModeSelect" style="display:none;" title="Swarm Mode">
+          <option value="game">🎮 Game Studio</option>
+          <option value="board">🏛️ Board</option>
+        </select>
         <input type="text" class="text-input" id="textPromptInput" placeholder="Speak into mic or type a prompt..." autocomplete="off">
         <button class="send-btn" id="sendPromptBtn" type="button" title="Send (Enter)">
           <svg id="sendBtnIcon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -2627,6 +2741,24 @@ All rights reserved. Redistribution and use in source and binary forms permitted
     let vadSilenceTimer = null;
     let isServerGenerating = false;
     let isAudioMuted = false;
+    let enableThinking = false;
+    let enableSwarm = false;
+    const thinkingToggleBtn = document.getElementById('thinkingToggleBtn');
+    const swarmToggleBtn = document.getElementById('swarmToggleBtn');
+    const swarmModeSelect = document.getElementById('swarmModeSelect');
+    if (thinkingToggleBtn) {
+      thinkingToggleBtn.addEventListener('click', () => {
+        enableThinking = !enableThinking;
+        thinkingToggleBtn.classList.toggle('active-think', enableThinking);
+      });
+    }
+    if (swarmToggleBtn) {
+      swarmToggleBtn.addEventListener('click', () => {
+        enableSwarm = !enableSwarm;
+        swarmToggleBtn.classList.toggle('active-swarm', enableSwarm);
+        if (swarmModeSelect) swarmModeSelect.style.display = enableSwarm ? 'inline-flex' : 'none';
+      });
+    }
     let audioEndTimer = null;
 
     const recordBtn = document.getElementById('recordBtn');
@@ -4300,6 +4432,86 @@ All rights reserved. Redistribution and use in source and binary forms permitted
           statusText.textContent = "Ready - Click microphone to speak";
           statusText.className = "status-text";
         }
+      } else if (msg.type === 'swarm_start') {
+        isServerGenerating = true;
+        updateSendStopButton();
+        const board = document.createElement('div');
+        board.className = 'swarm-board';
+        board.id = 'activeSwarmBoard';
+        const cardsHtml = (msg.advisors || []).map(a => `
+          <div class="swarm-card" style="--advisor-color: ${a.color};">
+            <div class="swarm-card-head">
+              <span>${a.icon} ${a.name}</span>
+              <span class="swarm-card-tok" data-swarm-tok="${a.id}" style="font-size:11px;color:#94a3b8;">0 tok</span>
+            </div>
+            <div class="swarm-card-body" data-swarm-body="${a.id}"></div>
+          </div>
+        `).join('');
+        board.innerHTML = `
+          <div class="swarm-header">
+            <div class="swarm-title">${msg.title || '🐝 Project Swarm · 8-Angle Board of Advisors'}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span class="swarm-badge">Router: EmbeddingGemma-2 (${msg.router_score}, ${msg.router_ms}ms)</span>
+              <span class="swarm-badge swarm-agg-speed">0.0 tok/s</span>
+            </div>
+          </div>
+          <div class="swarm-grid">${cardsHtml}</div>
+          <div class="swarm-game-container" style="display:none;margin-top:10px;"></div>
+          <div class="swarm-verdict">
+            <div class="swarm-verdict-title" style="font-weight:700;color:#34d399;margin-bottom:6px;">🧠 Executive Verdict</div>
+            <div class="swarm-verdict-body"></div>
+          </div>
+        `;
+        const prev = document.getElementById('activeSwarmBoard');
+        if (prev) prev.removeAttribute('id');
+        chatContainer.appendChild(board);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (msg.type === 'swarm_chunk') {
+        const board = document.getElementById('activeSwarmBoard');
+        if (board) {
+          const bodyEl = board.querySelector(`[data-swarm-body="${msg.advisor_id}"]`);
+          if (bodyEl) bodyEl.textContent += (msg.chunk || '');
+          const tokEl = board.querySelector(`[data-swarm-tok="${msg.advisor_id}"]`);
+          if (tokEl && typeof msg.tokens === 'number') tokEl.textContent = `${msg.tokens} tok`;
+          const speedEl = board.querySelector('.swarm-agg-speed');
+          if (speedEl && typeof msg.agg_tok_s === 'number') speedEl.textContent = `${msg.agg_tok_s} tok/s (8× E2B)`;
+        }
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (msg.type === 'swarm_done') {
+        const board = document.getElementById('activeSwarmBoard');
+        const speedEl = board ? board.querySelector('.swarm-agg-speed') : null;
+        if (speedEl) speedEl.textContent = `✅ ${msg.agg_tok_s} tok/s (${msg.per_agent_tok_s}/agent · ${msg.wall_s}s · ${msg.total_tokens} tok)`;
+      } else if (msg.type === 'swarm_verdict_chunk') {
+        const board = document.getElementById('activeSwarmBoard');
+        if (board) {
+          const box = board.querySelector('.swarm-verdict');
+          const title = board.querySelector('.swarm-verdict-title');
+          const body = board.querySelector('.swarm-verdict-body');
+          if (box) box.style.display = 'block';
+          if (title && msg.model) title.textContent = `🧠 Executive Verdict (${msg.model})`;
+          if (body) body.textContent += (msg.chunk || '');
+        }
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (msg.type === 'swarm_game_ready') {
+        const board = document.getElementById('activeSwarmBoard');
+        const gameBox = board ? board.querySelector('.swarm-game-container') : null;
+        if (gameBox && msg.html) {
+          const verdictBox = board.querySelector('.swarm-verdict');
+          if (verdictBox) verdictBox.style.display = 'none';
+          gameBox.style.display = 'block';
+          gameBox.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-weight:700;color:#34d399;font-size:13px;">🎮 Playable Build Ready (${msg.model || 'Game Director'}) · Click inside to focus controls</span>
+              <button type="button" class="mode-toggle-btn swarm-game-restart">↻ Restart</button>
+            </div>
+            <iframe class="swarm-game-frame" sandbox="allow-scripts" style="width:100%;height:460px;border:1px solid rgba(16,185,129,0.4);border-radius:12px;background:#050810;"></iframe>
+          `;
+          const frame = gameBox.querySelector('.swarm-game-frame');
+          if (frame) frame.srcdoc = msg.html;
+          const restartBtn = gameBox.querySelector('.swarm-game-restart');
+          if (restartBtn && frame) restartBtn.onclick = () => { frame.srcdoc = msg.html; };
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
       } else if (msg.type === 'no_speech_detected') {
         isServerGenerating = false;
         updateSendStopButton();
@@ -4795,7 +5007,10 @@ All rights reserved. Redistribution and use in source and binary forms permitted
       ws.send(JSON.stringify({
         type: "text_prompt",
         text: text,
-        images: frames
+        images: frames,
+        enable_thinking: enableThinking,
+        enable_swarm: enableSwarm,
+        swarm_mode: swarmModeSelect ? swarmModeSelect.value : 'game'
       }));
 
       textPromptInput.value = '';

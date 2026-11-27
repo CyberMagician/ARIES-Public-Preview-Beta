@@ -1159,6 +1159,568 @@ async def handle_profile_distill(request):
     return web.json_response({"status": "updated", "added": len(bullets), "bullets": bullets, "profile": updated})
 
 
+SWARM_ADVISORS = [
+    {"id": 0, "name": "Security", "icon": "🛡️", "color": "#ef4444", "system": "You are the Security Advisor on an 8-angle Board of Advisors. Give 2-3 sharp, concrete bullet points on security risks, privacy, and attack surface. Be concise (under 110 words)."},
+    {"id": 1, "name": "Cost & ROI", "icon": "💰", "color": "#f59e0b", "system": "You are the Cost & ROI Advisor on an 8-angle Board of Advisors. Give 2-3 sharp, concrete bullet points on unit economics, build/run costs, and ROI. Be concise (under 110 words)."},
+    {"id": 2, "name": "UX & Adoption", "icon": "🎨", "color": "#3b82f6", "system": "You are the UX & Adoption Advisor on an 8-angle Board of Advisors. Give 2-3 sharp, concrete bullet points on user friction, onboarding, and delight. Be concise (under 110 words)."},
+    {"id": 3, "name": "Performance", "icon": "⚡", "color": "#10b981", "system": "You are the Performance Advisor on an 8-angle Board of Advisors. Give 2-3 sharp, concrete bullet points on latency, throughput, and bottlenecks. Be concise (under 110 words)."},
+    {"id": 4, "name": "Market & GTM", "icon": "📈", "color": "#8b5cf6", "system": "You are the Market & GTM Advisor on an 8-angle Board of Advisors. Give 2-3 sharp, concrete bullet points on positioning, differentiation, and distribution. Be concise (under 110 words)."},
+    {"id": 5, "name": "Legal & Risk", "icon": "⚖️", "color": "#ec4899", "system": "You are the Legal & Risk Advisor on an 8-angle Board of Advisors. Give 2-3 sharp, concrete bullet points on compliance, IP, liability, and licensing. Be concise (under 110 words)."},
+    {"id": 6, "name": "Scalability", "icon": "🏗️", "color": "#06b6d4", "system": "You are the Scalability Advisor on an 8-angle Board of Advisors. Give 2-3 sharp, concrete bullet points on architecture limits, concurrency, and growth. Be concise (under 110 words)."},
+    {"id": 7, "name": "Devil's Advocate", "icon": "😈", "color": "#f97316", "system": "You are the Devil's Advocate on an 8-angle Board of Advisors. Give 2-3 sharp, blunt bullet points on why this could fail and what everyone is overlooking. Be concise (under 110 words)."},
+]
+
+SWARM_GAME_WORKERS = [
+    {"id": 0, "name": "Theme & Palette", "icon": "🎨", "color": "#8b5cf6", "system": "You are the Theme & Palette Designer in an 8-agent Game Studio. Propose a punchy game title, 1-line tagline, and dark/neon hex colors (bgColor, gridColor, playerColor, bulletColor). Keep it under 80 words."},
+    {"id": 1, "name": "Player & Weapons", "icon": "🚀", "color": "#10b981", "system": "You are the Player & Weapons Designer in an 8-agent Game Studio. Define hero shape (triangle/diamond/hex), speed (220-360), fireRateMs (90-200), and weapon feel. Keep it under 80 words."},
+    {"id": 2, "name": "Enemy Roster", "icon": "👾", "color": "#ef4444", "system": "You are the Enemy Roster Designer in an 8-agent Game Studio. Define 3 enemy types (fast chaser, ranged shooter, heavy tank) with distinct hex colors, HP (1-5), and speed. Keep it under 80 words."},
+    {"id": 3, "name": "Waves & Pacing", "icon": "🌊", "color": "#06b6d4", "system": "You are the Waves & Pacing Designer in an 8-agent Game Studio. Define starting wave intensity, spawn cadence, and how difficulty ramps per wave. Keep it under 80 words."},
+    {"id": 4, "name": "Power-Ups", "icon": "💎", "color": "#f59e0b", "system": "You are the Power-Up Designer in an 8-agent Game Studio. Define orb drop behavior for Spread Shot, Rapid Fire, and Shield, plus powerupColor hex. Keep it under 80 words."},
+    {"id": 5, "name": "Arena Hazards", "icon": "🌋", "color": "#f97316", "system": "You are the Arena Hazards Designer in an 8-agent Game Studio. Define drifting obstacle count (2-7) and hazardColor hex for the arena. Keep it under 80 words."},
+    {"id": 6, "name": "WebAudio SFX", "icon": "🔊", "color": "#ec4899", "system": "You are the Audio Designer in an 8-agent Game Studio. Define WebAudio synth presets: shootWave/hitWave (sawtooth/square/triangle/sine) and Hz pitches (shootHz, hitHz, pickupHz). Keep it under 80 words."},
+    {"id": 7, "name": "HUD & Flavor", "icon": "🏆", "color": "#3b82f6", "system": "You are the HUD & UI Designer in an 8-agent Game Studio. Define the Start button label, Game Over headline, and HUD vibe. Keep it under 80 words."},
+]
+
+SWARM_INTENT_EXEMPLARS = [
+    "Evaluate this product idea from multiple angles",
+    "Run a board of advisors analysis on this architecture or business decision",
+    "Analyze the pros, cons, risks, cost, security, and scalability of this idea",
+    "Use project swarm to critique this startup or technical proposal",
+    "Give me an 8-angle decision breakdown for this concept",
+    "Evaluate this investment or product strategy from every perspective",
+]
+
+_SWARM_EXEMPLAR_VECS = None
+_SWARM_SERVER_PROC = None
+
+
+def classify_swarm_intent(prompt_text: str) -> tuple[bool, float, float]:
+    """Use EmbeddingGemma-2-270M to detect if a prompt should spin up the 8x E2B Project Swarm."""
+    global _SWARM_EXEMPLAR_VECS
+    t0 = time.perf_counter()
+    lower = prompt_text.lower()
+    keyword_hit = any(k in lower for k in ("board of advisors", "project swarm", "8-angle", "8 angle"))
+    try:
+        if not memory_store.embedder.is_healthy():
+            memory_store.embedder.start()
+        if _SWARM_EXEMPLAR_VECS is None:
+            _SWARM_EXEMPLAR_VECS = memory_store.embedder.embed_documents([(None, ex) for ex in SWARM_INTENT_EXEMPLARS])
+        qv = memory_store.embedder.embed_query(prompt_text)
+        max_sim = 0.0
+        if qv is not None and _SWARM_EXEMPLAR_VECS:
+            max_sim = max(
+                (float(np.dot(qv, ev)) for ev in _SWARM_EXEMPLAR_VECS if ev is not None),
+                default=0.0,
+            )
+        ms = (time.perf_counter() - t0) * 1000.0
+        semantic_hit = (len(prompt_text.strip()) >= 40) and (max_sim >= 0.82)
+        return (keyword_hit or semantic_hit), max_sim, ms
+    except Exception:
+        ms = (time.perf_counter() - t0) * 1000.0
+        return keyword_hit, (1.0 if keyword_hit else 0.0), ms
+
+
+async def ensure_swarm_e2b_server() -> str:
+    """Ensure a dedicated 8-slot llama-server for E2B is running on port 8798."""
+    global _SWARM_SERVER_PROC
+    session = await get_http_session()
+    try:
+        async with session.get("http://127.0.0.1:8798/health", timeout=ClientTimeout(total=1.5)) as resp:
+            if resp.status == 200:
+                return "http://127.0.0.1:8798/v1/chat/completions"
+    except Exception:
+        pass
+
+    model_root = _resolve_model_root()
+    e2b_path = os.path.join(model_root, "gemma-4", "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf")
+    llama_bin = os.path.join(os.path.dirname(os.path.abspath(__file__)), "engine", "llama-metal", "llama-server")
+    if not os.path.exists(llama_bin):
+        llama_bin = os.path.join(os.path.dirname(os.path.abspath(__file__)), "engine", "llama-vulkan", "llama-server.exe")
+
+    if _SWARM_SERVER_PROC is None or _SWARM_SERVER_PROC.poll() is not None:
+        _SWARM_SERVER_PROC = subprocess.Popen(
+            [llama_bin, "-m", e2b_path, "-np", "8", "-c", "16384", "-ngl", "99", "--host", "127.0.0.1", "--port", "8798"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+    for _ in range(50):
+        await asyncio.sleep(0.5)
+        try:
+            async with session.get("http://127.0.0.1:8798/health", timeout=ClientTimeout(total=1.5)) as resp:
+                if resp.status == 200:
+                    return "http://127.0.0.1:8798/v1/chat/completions"
+        except Exception:
+            pass
+    raise RuntimeError("Swarm E2B llama-server on port 8798 failed to become ready.")
+
+
+def build_swarm_game_html(spec: dict) -> str:
+    """Compile a Game Director JSON blueprint into a guaranteed-playable HTML5 Canvas + WebAudio game."""
+    defaults = {
+        "title": "NEON SWARM ARENA",
+        "tagline": "WASD/Arrows to Move · Mouse/Space to Fire",
+        "bgColor": "#050810",
+        "gridColor": "#0f1f2e",
+        "playerColor": "#10b981",
+        "playerShape": "triangle",
+        "playerSpeed": 280,
+        "fireRateMs": 130,
+        "bulletColor": "#34d399",
+        "enemies": [
+            {"name": "Chaser", "color": "#ef4444", "hp": 1, "speed": 135, "radius": 13, "behavior": "chaser"},
+            {"name": "Shooter", "color": "#ec4899", "hp": 2, "speed": 90, "radius": 15, "behavior": "shooter"},
+            {"name": "Tank", "color": "#f97316", "hp": 5, "speed": 62, "radius": 22, "behavior": "tank"},
+        ],
+        "hazardCount": 4,
+        "hazardColor": "#6366f1",
+        "powerupColor": "#f59e0b",
+        "sfx": {"shootWave": "sawtooth", "shootHz": 640, "hitWave": "square", "hitHz": 160, "pickupHz": 880},
+        "startLabel": "LAUNCH MISSION",
+        "gameOverText": "SYSTEM OVERLOAD",
+    }
+    merged = {**defaults, **(spec if isinstance(spec, dict) else {})}
+    if not isinstance(merged.get("enemies"), list) or len(merged["enemies"]) < 3:
+        merged["enemies"] = defaults["enemies"]
+    if not isinstance(merged.get("sfx"), dict):
+        merged["sfx"] = defaults["sfx"]
+    else:
+        merged["sfx"] = {**defaults["sfx"], **merged["sfx"]}
+    spec_json = json.dumps(merged)
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; user-select: none; }}
+  html, body {{ width: 100%; height: 100%; overflow: hidden; background: {merged['bgColor']}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #f8fafc; }}
+  canvas {{ display: block; width: 100%; height: 100%; cursor: crosshair; }}
+  #overlay {{
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(5, 8, 16, 0.78); backdrop-filter: blur(4px); text-align: center; padding: 20px; z-index: 10;
+  }}
+  #overlay.hidden {{ display: none; }}
+  h1 {{ font-size: 28px; font-weight: 800; letter-spacing: 1px; color: {merged['playerColor']}; text-shadow: 0 0 18px {merged['playerColor']}66; margin-bottom: 8px; }}
+  p {{ font-size: 13px; color: #cbd5e1; margin-bottom: 18px; max-width: 420px; }}
+  #startBtn {{
+    padding: 12px 28px; font-size: 14px; font-weight: 800; letter-spacing: 0.8px; border: none; border-radius: 999px;
+    background: {merged['playerColor']}; color: #050810; cursor: pointer; box-shadow: 0 0 20px {merged['playerColor']}88;
+  }}
+  #startBtn:hover {{ transform: scale(1.05); }}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="overlay">
+  <h1 id="ovTitle">{merged['title']}</h1>
+  <p id="ovSub">{merged['tagline']}</p>
+  <button id="startBtn" type="button">{merged['startLabel']}</button>
+</div>
+<script>
+const SPEC = {spec_json};
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const ovTitle = document.getElementById('ovTitle');
+const ovSub = document.getElementById('ovSub');
+const startBtn = document.getElementById('startBtn');
+
+let W = 800, H = 460;
+function resize() {{ W = canvas.width = window.innerWidth || 800; H = canvas.height = window.innerHeight || 460; }}
+window.addEventListener('resize', resize);
+resize();
+
+let audioCtx = null;
+function beep(wave, freq, dur, vol = 0.08) {{
+  try {{
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = wave || 'sine'; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.45), audioCtx.currentTime + dur);
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur);
+  }} catch (e) {{}}
+}}
+
+let state = 'title', score = 0, best = 0, wave = 1, shake = 0;
+let keys = {{}}, mouse = {{ x: W / 2, y: H / 2, down: false }};
+let player = {{ x: W / 2, y: H / 2, r: 14, hp: 5, maxHp: 5, angle: 0, lastShot: 0, rapidUntil: 0, spreadUntil: 0, shieldUntil: 0 }};
+let bullets = [], eBullets = [], enemies = [], particles = [], powerups = [], hazards = [];
+let spawnTimer = 0, waveKills = 0;
+
+window.addEventListener('keydown', e => {{
+  keys[e.key.toLowerCase()] = true;
+  if ((e.key === 'Enter' || e.key === ' ') && state !== 'playing') startGame();
+}});
+window.addEventListener('keyup', e => {{ keys[e.key.toLowerCase()] = false; }});
+canvas.addEventListener('mousemove', e => {{ const r = canvas.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; }});
+canvas.addEventListener('mousedown', () => {{ mouse.down = true; window.focus(); }});
+window.addEventListener('mouseup', () => {{ mouse.down = false; }});
+startBtn.addEventListener('click', startGame);
+
+function initHazards() {{
+  hazards = [];
+  const cnt = Math.max(0, Math.min(8, Number(SPEC.hazardCount) || 4));
+  for (let i = 0; i < cnt; i++) {{
+    hazards.push({{ x: Math.random() * W, y: Math.random() * H, r: 16 + Math.random() * 14, vx: (Math.random() - 0.5) * 45, vy: (Math.random() - 0.5) * 45 }});
+  }}
+}}
+
+function startGame() {{
+  state = 'playing'; score = 0; wave = 1; waveKills = 0; shake = 0;
+  player = {{ x: W / 2, y: H / 2, r: 14, hp: 5, maxHp: 5, angle: 0, lastShot: 0, rapidUntil: 0, spreadUntil: 0, shieldUntil: 0 }};
+  bullets = []; eBullets = []; enemies = []; particles = []; powerups = [];
+  initHazards();
+  overlay.classList.add('hidden');
+  beep('triangle', 520, 0.14, 0.1);
+}}
+
+function boom(x, y, color, n = 12) {{
+  for (let i = 0; i < n; i++) {{
+    const a = Math.random() * Math.PI * 2, sp = 50 + Math.random() * 180;
+    particles.push({{ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.45 + Math.random() * 0.25, maxLife: 0.7, color, r: 2 + Math.random() * 3 }});
+  }}
+}}
+
+function spawnEnemy() {{
+  const edge = Math.floor(Math.random() * 4);
+  let x = edge === 0 ? 0 : edge === 1 ? W : Math.random() * W;
+  let y = edge === 2 ? 0 : edge === 3 ? H : Math.random() * H;
+  const tpl = SPEC.enemies[Math.floor(Math.random() * SPEC.enemies.length)];
+  enemies.push({{
+    x, y, r: Number(tpl.radius) || 14, hp: (Number(tpl.hp) || 1) + Math.floor((wave - 1) / 3),
+    maxHp: (Number(tpl.hp) || 1) + Math.floor((wave - 1) / 3),
+    speed: (Number(tpl.speed) || 110) * (1 + wave * 0.05),
+    color: tpl.color || '#ef4444', behavior: tpl.behavior || 'chaser', shootCd: 1.5 + Math.random()
+  }});
+}}
+
+let lastT = performance.now();
+function loop(now) {{
+  const dt = Math.min(0.05, (now - lastT) / 1000);
+  lastT = now;
+  update(dt, now);
+  draw(now);
+  requestAnimationFrame(loop);
+}}
+
+function update(dt, now) {{
+  if (state !== 'playing') return;
+  let dx = 0, dy = 0;
+  if (keys['w'] || keys['arrowup']) dy -= 1;
+  if (keys['s'] || keys['arrowdown']) dy += 1;
+  if (keys['a'] || keys['arrowleft']) dx -= 1;
+  if (keys['d'] || keys['arrowright']) dx += 1;
+  if (dx || dy) {{ const l = Math.hypot(dx, dy); dx /= l; dy /= l; }}
+  const spd = Number(SPEC.playerSpeed) || 280;
+  player.x = Math.max(player.r, Math.min(W - player.r, player.x + dx * spd * dt));
+  player.y = Math.max(player.r, Math.min(H - player.r, player.y + dy * spd * dt));
+  player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+
+  const fireRate = (now < player.rapidUntil ? 0.5 : 1) * (Number(SPEC.fireRateMs) || 130);
+  if ((mouse.down || keys[' ']) && now - player.lastShot >= fireRate) {{
+    player.lastShot = now;
+    const angles = now < player.spreadUntil ? [player.angle - 0.18, player.angle, player.angle + 0.18] : [player.angle];
+    angles.forEach(a => bullets.push({{ x: player.x + Math.cos(a) * 16, y: player.y + Math.sin(a) * 16, vx: Math.cos(a) * 560, vy: Math.sin(a) * 560, r: 4 }}));
+    beep(SPEC.sfx.shootWave, Number(SPEC.sfx.shootHz) || 640, 0.06, 0.05);
+  }}
+
+  spawnTimer -= dt;
+  if (spawnTimer <= 0) {{
+    spawnEnemy();
+    spawnTimer = Math.max(0.28, 1.35 - wave * 0.09);
+  }}
+
+  hazards.forEach(h => {{
+    h.x = (h.x + h.vx * dt + W) % W; h.y = (h.y + h.vy * dt + H) % H;
+    if (Math.hypot(h.x - player.x, h.y - player.y) < h.r + player.r && now > player.shieldUntil) {{
+      player.hp -= 1; player.shieldUntil = now + 900; shake = 8;
+      boom(player.x, player.y, SPEC.hazardColor, 14);
+      beep(SPEC.sfx.hitWave, Number(SPEC.sfx.hitHz) || 160, 0.14, 0.1);
+    }}
+  }});
+
+  bullets = bullets.filter(b => {{ b.x += b.vx * dt; b.y += b.vy * dt; return b.x > -20 && b.x < W + 20 && b.y > -20 && b.y < H + 20; }});
+  eBullets = eBullets.filter(b => {{
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    if (Math.hypot(b.x - player.x, b.y - player.y) < b.r + player.r) {{
+      if (now > player.shieldUntil) {{ player.hp -= 1; player.shieldUntil = now + 600; shake = 7; beep(SPEC.sfx.hitWave, Number(SPEC.sfx.hitHz) || 160, 0.12, 0.09); }}
+      return false;
+    }}
+    return b.x > -20 && b.x < W + 20 && b.y > -20 && b.y < H + 20;
+  }});
+
+  enemies.forEach((en, ei) => {{
+    const a = Math.atan2(player.y - en.y, player.x - en.x);
+    en.x += Math.cos(a) * en.speed * dt; en.y += Math.sin(a) * en.speed * dt;
+    if (en.behavior === 'shooter') {{
+      en.shootCd -= dt;
+      if (en.shootCd <= 0) {{
+        en.shootCd = 2.0;
+        eBullets.push({{ x: en.x, y: en.y, vx: Math.cos(a) * 240, vy: Math.sin(a) * 240, r: 4 }});
+      }}
+    }}
+    if (Math.hypot(en.x - player.x, en.y - player.y) < en.r + player.r) {{
+      if (now > player.shieldUntil) {{ player.hp -= 1; player.shieldUntil = now + 700; shake = 9; beep(SPEC.sfx.hitWave, Number(SPEC.sfx.hitHz) || 160, 0.15, 0.1); }}
+      en.hp = 0;
+    }}
+    bullets.forEach((b, bi) => {{
+      if (Math.hypot(b.x - en.x, b.y - en.y) < b.r + en.r) {{
+        en.hp -= 1; bullets.splice(bi, 1); boom(b.x, b.y, en.color, 5);
+      }}
+    }});
+  }});
+
+  enemies = enemies.filter(en => {{
+    if (en.hp <= 0) {{
+      score += 10 * wave; waveKills += 1;
+      if (score > best) best = score;
+      if (waveKills >= 8 + wave * 3) {{ wave += 1; waveKills = 0; }}
+      boom(en.x, en.y, en.color, 14);
+      if (Math.random() < 0.22) {{
+        const kind = ['spread', 'rapid', 'shield'][Math.floor(Math.random() * 3)];
+        powerups.push({{ x: en.x, y: en.y, kind, r: 9, life: 9 }});
+      }}
+      return false;
+    }}
+    return true;
+  }});
+
+  powerups = powerups.filter(p => {{
+    p.life -= dt;
+    if (Math.hypot(p.x - player.x, p.y - player.y) < p.r + player.r + 4) {{
+      if (p.kind === 'spread') player.spreadUntil = now + 7000;
+      if (p.kind === 'rapid') player.rapidUntil = now + 7000;
+      if (p.kind === 'shield') player.shieldUntil = now + 5000;
+      beep('sine', Number(SPEC.sfx.pickupHz) || 880, 0.14, 0.09);
+      boom(p.x, p.y, SPEC.powerupColor, 10);
+      return false;
+    }}
+    return p.life > 0;
+  }});
+
+  particles = particles.filter(pt => {{ pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.life -= dt; return pt.life > 0; }});
+  shake = Math.max(0, shake - 25 * dt);
+
+  if (player.hp <= 0) {{
+    state = 'gameover';
+    ovTitle.textContent = SPEC.gameOverText;
+    ovSub.textContent = `Score: ${{score}} · Best: ${{best}} · Wave ${{wave}}`;
+    startBtn.textContent = 'PLAY AGAIN';
+    overlay.classList.remove('hidden');
+  }}
+}}
+
+function draw(now) {{
+  ctx.save();
+  if (shake > 0) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+  ctx.fillStyle = SPEC.bgColor; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = SPEC.gridColor; ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) {{ ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }}
+  for (let y = 0; y < H; y += 40) {{ ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }}
+
+  hazards.forEach(h => {{
+    ctx.strokeStyle = SPEC.hazardColor; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI * 2); ctx.stroke();
+  }});
+  powerups.forEach(p => {{
+    ctx.fillStyle = SPEC.powerupColor; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#050810'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(p.kind[0].toUpperCase(), p.x, p.y + 3.5);
+  }});
+  bullets.forEach(b => {{ ctx.fillStyle = SPEC.bulletColor; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); }});
+  eBullets.forEach(b => {{ ctx.fillStyle = '#fb7185'; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); }});
+  enemies.forEach(en => {{
+    ctx.fillStyle = en.color; ctx.beginPath(); ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2); ctx.fill();
+  }});
+  particles.forEach(pt => {{
+    ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife); ctx.fillStyle = pt.color;
+    ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2); ctx.fill();
+  }});
+  ctx.globalAlpha = 1;
+
+  if (state === 'playing') {{
+    ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
+    ctx.fillStyle = SPEC.playerColor;
+    ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(-12, -10); ctx.lineTo(-7, 0); ctx.lineTo(-12, 10); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if (now < player.shieldUntil) {{
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(player.x, player.y, player.r + 6, 0, Math.PI * 2); ctx.stroke();
+    }}
+  }}
+  ctx.restore();
+
+  ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 13px monospace'; ctx.textAlign = 'left';
+  ctx.fillText(`SCORE ${{score}}   BEST ${{best}}   WAVE ${{wave}}   HP ${{'♥'.repeat(Math.max(0, player.hp))}}`, 14, 24);
+}}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>"""
+
+
+async def run_project_swarm_turn(ws, prompt_text: str, router_score: float, router_ms: float, swarm_mode: str = "game"):
+    """Fan out to 8 parallel E2B workers at ~480 tok/s, then synthesize with the Lead/Director."""
+    try:
+        await _run_project_swarm_turn_inner(ws, prompt_text, router_score, router_ms, swarm_mode=swarm_mode)
+    except Exception as exc:
+        print(f"[SWARM ERROR] {exc}", flush=True)
+        if not ws.closed:
+            await ws.send_json({"type": "turn_complete", "metrics": {"tok_s": 0.0, "ttft_ms": round(router_ms, 1)}})
+
+
+async def _run_project_swarm_turn_inner(ws, prompt_text: str, router_score: float, router_ms: float, swarm_mode: str = "game"):
+    workers = SWARM_GAME_WORKERS if swarm_mode == "game" else SWARM_ADVISORS
+    board_title = "🎮 Project Swarm · 8-Agent Game Studio" if swarm_mode == "game" else "🐝 Project Swarm · 8-Angle Board of Advisors"
+    await ws.send_json({
+        "type": "swarm_start",
+        "mode": swarm_mode,
+        "title": board_title,
+        "prompt": prompt_text,
+        "router_score": round(router_score, 3),
+        "router_ms": round(router_ms, 1),
+        "advisors": [{"id": a["id"], "name": a["name"], "icon": a["icon"], "color": a["color"]} for a in workers],
+    })
+
+    swarm_url = await ensure_swarm_e2b_server()
+    session = await get_http_session()
+    advisor_outputs = [""] * len(workers)
+    total_tokens = 0
+    t0 = time.perf_counter()
+
+    async def _run_one(advisor: dict):
+        nonlocal total_tokens
+        idx = advisor["id"]
+        local_tokens = 0
+        payload = {
+            "model": "gemma-4-E2B",
+            "messages": [
+                {"role": "system", "content": advisor["system"]},
+                {"role": "user", "content": prompt_text},
+            ],
+            "max_tokens": 160,
+            "temperature": 0.7,
+            "stream": True,
+            "chat_template_kwargs": {"enable_thinking": False},
+        }
+        async with session.post(swarm_url, json=payload, timeout=ClientTimeout(total=90)) as resp:
+            async for raw_line in resp.content:
+                line = raw_line.decode("utf-8", errors="ignore").strip()
+                if not line.startswith("data: "):
+                    continue
+                data_str = line[6:].strip()
+                if data_str == "[DONE]":
+                    break
+                try:
+                    chunk_json = json.loads(data_str)
+                    delta = chunk_json.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    if delta:
+                        advisor_outputs[idx] += delta
+                        local_tokens += 1
+                        total_tokens += 1
+                        elapsed = max(0.05, time.perf_counter() - t0)
+                        if not ws.closed:
+                            await ws.send_json({
+                                "type": "swarm_chunk",
+                                "advisor_id": idx,
+                                "chunk": delta,
+                                "tokens": local_tokens,
+                                "agg_tok_s": round(total_tokens / elapsed, 1),
+                            })
+                except Exception:
+                    continue
+
+    await asyncio.gather(*[_run_one(a) for a in workers])
+    wall_s = max(0.05, time.perf_counter() - t0)
+    agg_tps = total_tokens / wall_s
+    await ws.send_json({
+        "type": "swarm_done",
+        "wall_s": round(wall_s, 2),
+        "total_tokens": total_tokens,
+        "agg_tok_s": round(agg_tps, 1),
+        "per_agent_tok_s": round(agg_tps / len(workers), 1),
+    })
+
+    # Synthesize with Lead/Director (prefer 26B-A4B on 8777 if loaded, else E2B on 8798)
+    verdict_url = swarm_url
+    verdict_model = "gemma-4-E2B (local)"
+    try:
+        async with session.get("http://127.0.0.1:8777/v1/models", timeout=ClientTimeout(total=1.0)) as r:
+            if r.status == 200:
+                verdict_url = "http://127.0.0.1:8777/v1/chat/completions"
+                verdict_model = llama_manager.active_model_id or "gemma-4-26B-A4B"
+    except Exception:
+        pass
+
+    board_summary = "\n\n".join(
+        f"### {a['icon']} {a['name']}\n{advisor_outputs[a['id']].strip()}" for a in workers
+    )
+    if swarm_mode == "game":
+        director_sys = (
+            "You are the Lead Game Director. Synthesize the 8 designer specs into ONE valid JSON object matching this exact schema: "
+            '{"title":"...","tagline":"...","bgColor":"#050810","gridColor":"#0f1f2e","playerColor":"#10b981",'
+            '"playerShape":"triangle","playerSpeed":280,"fireRateMs":130,"bulletColor":"#34d399",'
+            '"enemies":[{"name":"Chaser","color":"#ef4444","hp":1,"speed":135,"radius":13,"behavior":"chaser"},'
+            '{"name":"Shooter","color":"#ec4899","hp":2,"speed":90,"radius":15,"behavior":"shooter"},'
+            '{"name":"Tank","color":"#f97316","hp":5,"speed":62,"radius":22,"behavior":"tank"}],'
+            '"hazardCount":4,"hazardColor":"#6366f1","powerupColor":"#f59e0b",'
+            '"sfx":{"shootWave":"sawtooth","shootHz":640,"hitWave":"square","hitHz":160,"pickupHz":880},'
+            '"startLabel":"LAUNCH MISSION","gameOverText":"SYSTEM OVERLOAD"}. '
+            "Output ONLY raw JSON (no markdown fences, no prose)."
+        )
+        director_user = f"Game Request:\n{prompt_text}\n\n8 Designer Specs:\n{board_summary}"
+        verdict_max_tokens = 650
+    else:
+        director_sys = "You are the Chief Strategist. Synthesize the 8 advisor reports into a crisp 1-paragraph Executive Verdict, followed by a clear Go / Conditional-Go / No-Go recommendation and top 2 next actions."
+        director_user = f"Original Idea:\n{prompt_text}\n\n8-Angle Board Reports:\n{board_summary}"
+        verdict_max_tokens = 260
+
+    verdict_payload = {
+        "model": verdict_model,
+        "messages": [
+            {"role": "system", "content": director_sys},
+            {"role": "user", "content": director_user},
+        ],
+        "max_tokens": verdict_max_tokens,
+        "temperature": 0.3,
+        "stream": True,
+        "chat_template_kwargs": {"enable_thinking": False},
+    }
+    verdict_text = ""
+    async with session.post(verdict_url, json=verdict_payload, timeout=ClientTimeout(total=240)) as resp:
+        async for raw_line in resp.content:
+            line = raw_line.decode("utf-8", errors="ignore").strip()
+            if not line.startswith("data: "):
+                continue
+            data_str = line[6:].strip()
+            if data_str == "[DONE]":
+                break
+            try:
+                chunk_json = json.loads(data_str)
+                delta = chunk_json.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                if delta:
+                    verdict_text += delta
+                    if not ws.closed:
+                        await ws.send_json({"type": "swarm_verdict_chunk", "chunk": delta, "model": verdict_model})
+            except Exception:
+                continue
+
+    if swarm_mode == "game" and not ws.closed:
+        spec = {}
+        m = re.search(r"\{[\s\S]*\}", verdict_text)
+        if m:
+            try:
+                spec = json.loads(m.group(0))
+            except Exception:
+                spec = {}
+        clean_html = build_swarm_game_html(spec)
+        print(f"[SWARM GAME] Blueprint compiled ({len(clean_html)} chars, parsed_json={bool(spec)})", flush=True)
+        await ws.send_json({"type": "swarm_game_ready", "html": clean_html, "model": verdict_model})
+
+    await ws.send_json({"type": "turn_complete", "metrics": {"tok_s": round(agg_tps, 1), "ttft_ms": round(router_ms, 1)}})
+
+
 async def websocket_handler(request):
     """Full-duplex WebSocket bridge: raw PCM audio streaming + Parakeet ASR + Gemma + Streaming TTS + Console Logs."""
     ws = web.WebSocketResponse()
@@ -1218,7 +1780,7 @@ async def websocket_handler(request):
             active_generation_task.cancel()
         active_generation_task = None
 
-    async def run_gemma_and_speak(prompt_text: str, images: list[str] | None = None, turn_start_time: float | None = None):
+    async def run_gemma_and_speak(prompt_text: str, images: list[str] | None = None, turn_start_time: float | None = None, enable_thinking: bool = False, enable_swarm: bool = False, swarm_mode: str = "game"):
         nonlocal active_tts_pipeline
         cancel_active_tts()
         t_turn = turn_start_time or time.perf_counter()
@@ -1228,6 +1790,9 @@ async def websocket_handler(request):
         # 1. EmbeddingGemma 2 Asymmetric RAG Retrieval (Bypass on visual, chit-chat, action/tool commands, and pure coding turns)
         rag_matches = []
         has_images = bool(images)
+        if enable_swarm and not has_images and prompt_text.strip():
+            await run_project_swarm_turn(ws, prompt_text, 1.0, 0.0, swarm_mode=swarm_mode)
+            return
         is_visual = has_images or any(
             k in prompt_text.lower() for k in ("this image", "the image", "this picture", "this photo", "on my screen", "attached", "attachment")
         )
@@ -1299,6 +1864,7 @@ async def websocket_handler(request):
                 "max_tokens": 2048,
                 "temperature": 0.4 if has_images else sampling_temp,
                 "stream": True,
+                "chat_template_kwargs": {"enable_thinking": enable_thinking},
             }
         else:
             req_data = {
@@ -1306,8 +1872,8 @@ async def websocket_handler(request):
                 "messages": messages,
                 "max_tokens": -1,
                 "temperature": 0.4 if has_images else sampling_temp,
-                "reasoning_effort": "none",
-                "chat_template_kwargs": {"enable_thinking": False},
+                "reasoning_effort": "medium" if enable_thinking else "none",
+                "chat_template_kwargs": {"enable_thinking": enable_thinking},
                 "id_slot": 0,
                 "cache_prompt": True,
                 "timings_per_token": True,
@@ -1670,13 +2236,16 @@ async def websocket_handler(request):
                         last_asr_ms = None
                         prompt_text = data.get("text", "").strip()
                         images = data.get("images", [])
+                        enable_thinking = bool(data.get("enable_thinking", False))
+                        enable_swarm = bool(data.get("enable_swarm", False))
+                        swarm_mode = str(data.get("swarm_mode", "game"))
                         if not prompt_text and images:
                             prompt_text = "Describe this visual attachment in detail."
                         if prompt_text or images:
                             t_turn_start = time.perf_counter()
                             print(f"[USER] Text/multimodal prompt: '{prompt_text}' (attachments: {len(images)})")
                             cancel_active_generation()
-                            active_generation_task = asyncio.create_task(run_gemma_and_speak(prompt_text, images=images, turn_start_time=t_turn_start))
+                            active_generation_task = asyncio.create_task(run_gemma_and_speak(prompt_text, images=images, turn_start_time=t_turn_start, enable_thinking=enable_thinking, enable_swarm=enable_swarm, swarm_mode=swarm_mode))
 
                     elif msg_type in ("interrupt", "stop_response"):
                         stop_native_mic()
